@@ -1,7 +1,7 @@
 <?php
 namespace SqlTark\Clauses\Join;
 
-use SqlTark\Join;
+use SqlTark\Query\Join;
 use SqlTark\Clauses\AbstractClause;
 
 class BaseJoin extends AbstractJoin

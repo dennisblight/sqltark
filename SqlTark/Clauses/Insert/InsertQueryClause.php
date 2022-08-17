@@ -1,7 +1,7 @@
 <?php
 namespace SqlTark\Clauses\Insert;
 
-use SqlTark\Query;
+use SqlTark\Query\Query;
 use SqlTark\Clauses\AbstractClause;
 
 class InsertQueryClause extends AbstractInsertClause

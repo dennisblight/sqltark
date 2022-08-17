@@ -1,7 +1,7 @@
 <?php
 namespace SqlTark\Clauses\From;
 
-use SqlTark\Query;
+use SqlTark\Query\Query;
 use SqlTark\Clauses\AbstractClause;
 use SqlTark\Clauses\From\AbstractFrom;
 

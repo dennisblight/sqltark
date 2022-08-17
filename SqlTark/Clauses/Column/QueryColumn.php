@@ -1,7 +1,7 @@
 <?php
 namespace SqlTark\Clauses\Column;
 
-use SqlTark\Query;
+use SqlTark\Query\Query;
 use SqlTark\Clauses\AbstractClause;
 use SqlTark\Clauses\Column\AbstractColumn;
 

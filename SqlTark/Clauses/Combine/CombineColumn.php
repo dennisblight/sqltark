@@ -1,7 +1,7 @@
 <?php
 namespace SqlTark\Clauses\Combine;
 
-use SqlTark\Query;
+use SqlTark\Query\Query;
 use SqlTark\Clauses\AbstractClause;
 
 class CombineColumn extends AbstractCombine

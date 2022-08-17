@@ -1,7 +1,7 @@
 <?php
 namespace SqlTark\Clauses\Condition;
 
-use SqlTark\Query;
+use SqlTark\Query\Query;
 use SqlTark\Clauses\AbstractClause;
 
 class SubQueryCondition extends AbstractCondition
