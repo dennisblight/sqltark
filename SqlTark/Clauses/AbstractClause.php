@@ -21,9 +21,10 @@ abstract class AbstractClause
         return $this->engine;
     }
 
-    public function setEngine(string $value)
+    public function setEngine(string $value): AbstractClause
     {
         $this->engine = $value;
+        return $this;
     }
 
     public function getComponent(): string
@@ -31,9 +32,10 @@ abstract class AbstractClause
         return $this->component;
     }
 
-    public function setComponent(string $value)
+    public function setComponent(string $value): AbstractClause
     {
         $this->component = $value;
+        return $this;
     }
 
     public function clone(): AbstractClause
