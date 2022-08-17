@@ -1,4 +1,7 @@
 <?php
+
+declare(strict_types=1);
+
 namespace SqlTark\Clauses\Column;
 
 use SqlTark\Clauses\AbstractClause;
@@ -10,7 +13,7 @@ class RawColumn extends AbstractColumn
      * @var string $expression
      */
     protected $expression;
-    
+
     /**
      * @var array $bindings
      */

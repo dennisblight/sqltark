@@ -1,4 +1,7 @@
 <?php
+
+declare(strict_types=1);
+
 namespace SqlTark\Clauses\Join;
 
 use SqlTark\Query\Join;

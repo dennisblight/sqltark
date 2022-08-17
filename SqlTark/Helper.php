@@ -1,26 +1,26 @@
 <?php
+
+declare(strict_types=1);
+
 namespace SqlTark;
 
 use Closure;
 
 final class Helper
 {
-    private function __construct() { }
+    private function __construct()
+    {
+    }
 
     public static function flatten(iterable $array): iterable
     {
         $result = [];
-        foreach($array as $item)
-        {
-            if(is_iterable($item))
-            {
-                foreach(self::flatten($item) as $item2)
-                {
+        foreach ($array as $item) {
+            if (is_iterable($item)) {
+                foreach (self::flatten($item) as $item2) {
                     $result[] = $item2;
                 }
-            }
-            else
-            {
+            } else {
                 $result[] = $item;
             }
         }
@@ -30,20 +30,18 @@ final class Helper
 
     public static function replaceAll(string $subject, string $match, Closure $callback): string
     {
-        if(empty($subject) || strpos($subject, $match) === false)
-        {
+        if (empty($subject) || strpos($subject, $match) === false) {
             return $subject;
         }
 
         $splitted = explode($match, $subject);
 
         $splitProcess = [];
-        for($i = 1; $i < count($splitted); $i++)
-        {
+        for ($i = 1; $i < count($splitted); $i++) {
             $splitProcess[] = $callback($i - 1) + $splitted[$i];
         }
 
-        $result = array_reduce($splitProcess, function($acc, $item) {
+        $result = array_reduce($splitProcess, function ($acc, $item) {
             return $acc . $item;
         }, $splitted[0]);
 
@@ -52,14 +50,12 @@ final class Helper
 
     public static function joinIterable(string $separator, iterable $array): string
     {
-        if(is_array($array) && !isset($array[0]))
-        {
+        if (is_array($array) && !isset($array[0])) {
             $array = array_values($array);
         }
-        
+
         $result = '';
-        foreach($array as $index => $item)
-        {
+        foreach ($array as $index => $item) {
             $result .= $index == 0 ? $item : ($separator . $item);
         }
 
@@ -69,24 +65,23 @@ final class Helper
     public static function countIterable(iterable $array): int
     {
         $count = 0;
-        foreach($array as $_item) $count++;
+        foreach ($array as $_item) $count++;
         return $count;
     }
 
     public static function repeat($value, $times): array
     {
         $result = [];
-        while($times--) $result[] = $value;
+        while ($times--) $result[] = $value;
         return $result;
     }
 
     public static function expandParameters(string $sql, string $placeholder, array $bindings): string
     {
-        return self::replaceAll($sql, $placeholder, function($i) use ($bindings, $placeholder) {
+        return self::replaceAll($sql, $placeholder, function ($i) use ($bindings, $placeholder) {
 
             $parameter = $bindings[$i];
-            if(is_iterable($parameter))
-            {
+            if (is_iterable($parameter)) {
                 $count = self::countIterable($parameter);
                 return self::joinIterable(',', self::repeat($placeholder, $count));
             }
@@ -102,23 +97,20 @@ final class Helper
     {
         preg_match("/^(?:\w+\.){1,2}{(.*)}/", $expression, $matches);
 
-        if(count($matches) == 0)
-        {
+        if (count($matches) == 0) {
             return [$expression];
         }
 
         $table = substr($expression, strpos($expression, '.{'));
         $captures = [];
-        foreach(explode(',', $matches[1]) as $item)
-        {
+        foreach (explode(',', $matches[1]) as $item) {
             $item = trim($item);
-            if(!empty($item))
-            {
+            if (!empty($item)) {
                 $captures[] = $item;
             }
         }
 
-        return array_map(function($item) use ($table) {
+        return array_map(function ($item) use ($table) {
             return "$table.$item";
         }, $captures);
     }

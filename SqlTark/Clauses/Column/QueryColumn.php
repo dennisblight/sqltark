@@ -1,4 +1,7 @@
 <?php
+
+declare(strict_types=1);
+
 namespace SqlTark\Clauses\Column;
 
 use SqlTark\Query\Query;
@@ -31,7 +34,7 @@ class QueryColumn extends AbstractColumn
         $self = parent::clone();
 
         $self->query = clone $this->query;
-        
+
         return $self;
     }
 }

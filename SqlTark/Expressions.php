@@ -1,9 +1,14 @@
 <?php
+
+declare(strict_types=1);
+
 namespace SqlTark;
 
 final class Expressions
 {
-    private function __construct() { }
+    private function __construct()
+    {
+    }
 
     public static function variable(string $name): Variable
     {

@@ -1,4 +1,7 @@
 <?php
+
+declare(strict_types=1);
+
 namespace SqlTark\Clauses\Column;
 
 use SqlTark\Clauses\AbstractClause;
@@ -27,7 +30,7 @@ abstract class Column extends AbstractColumn
     {
         /** @var Column */
         $self = parent::clone();
-        
+
         $self->name = $this->name;
 
         return $self;

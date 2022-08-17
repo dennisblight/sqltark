@@ -1,4 +1,7 @@
 <?php
+
+declare(strict_types=1);
+
 namespace SqlTark\Clauses\Condition;
 
 use SqlTark\Clauses\AbstractClause;
@@ -9,12 +12,12 @@ class TwoColumnsCondition extends AbstractCondition
      * @var string $first
      */
     protected $first;
-    
+
     /**
      * @var string $second
      */
     protected $second;
-    
+
     /**
      * @var string $operator
      */
@@ -49,7 +52,7 @@ class TwoColumnsCondition extends AbstractCondition
     {
         $this->operator = $value;
     }
-    
+
     /**
      * @return TwoColumnsCondition
      */

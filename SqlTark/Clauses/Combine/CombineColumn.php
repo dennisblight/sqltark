@@ -1,4 +1,7 @@
 <?php
+
+declare(strict_types=1);
+
 namespace SqlTark\Clauses\Combine;
 
 use SqlTark\Query\Query;
@@ -10,12 +13,12 @@ class CombineColumn extends AbstractCombine
      * @var Query $query
      */
     protected $query;
-    
+
     /**
      * @var string $operator
      */
     protected $operator;
-    
+
     /**
      * @var bool $all
      */

@@ -1,4 +1,7 @@
 <?php
+
+declare(strict_types=1);
+
 namespace SqlTark\Clauses\Join;
 
 use Closure;
@@ -10,27 +13,27 @@ class DeepJoin extends AbstractJoin
      * @var string $type
      */
     protected $type;
-    
+
     /**
      * @var string $expression
      */
     protected $expression;
-    
+
     /**
      * @var string $sourceKeySuffix
      */
     protected $sourceKeySuffix;
-    
+
     /**
      * @var string $targetKey
      */
     protected $targetKey;
-    
+
     /**
      * @var Closure $sourceKeyGenerator
      */
     protected $sourceKeyGenerator;
-    
+
     /**
      * @var Closure $targetKeyGenerator
      */

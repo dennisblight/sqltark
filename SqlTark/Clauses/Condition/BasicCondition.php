@@ -1,4 +1,7 @@
 <?php
+
+declare(strict_types=1);
+
 namespace SqlTark\Clauses\Condition;
 
 use SqlTark\Clauses\AbstractClause;
@@ -10,12 +13,12 @@ class BasicCondition extends AbstractCondition
      * @var string $column
      */
     protected $column = false;
-    
+
     /**
      * @var string $operator
      */
     protected $operator = false;
-    
+
     /**
      * @var mixed $value
      */
@@ -58,7 +61,7 @@ class BasicCondition extends AbstractCondition
     {
         /** @var BasicCondition */
         $self = parent::clone();
-        
+
         $self->column = $this->column;
         $self->operator = $this->operator;
         $self->value = $this->value;

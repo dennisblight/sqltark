@@ -1,4 +1,7 @@
 <?php
+
+declare(strict_types=1);
+
 namespace SqlTark\Clauses\From;
 
 use SqlTark\Clauses\AbstractClause;
@@ -22,9 +25,8 @@ class FromClause extends AbstractFrom
 
     public function getAlias(): string
     {
-        if(stripos($this->table, ' as ') !== false)
-        {
-            $segments = array_filter(explode(' ', $this->table), function($item) {
+        if (stripos($this->table, ' as ') !== false) {
+            $segments = array_filter(explode(' ', $this->table), function ($item) {
                 return $item != '';
             });
 

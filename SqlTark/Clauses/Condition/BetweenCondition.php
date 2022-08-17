@@ -1,4 +1,7 @@
 <?php
+
+declare(strict_types=1);
+
 namespace SqlTark\Clauses\Condition;
 
 use SqlTark\Clauses\AbstractClause;
@@ -9,12 +12,12 @@ class BetweenCondition extends AbstractCondition
      * @var string $column
      */
     protected $column;
-    
+
     /**
      * @var mixed $lower
      */
     protected $lower;
-    
+
     /**
      * @var mixed $higher
      */

@@ -1,4 +1,7 @@
 <?php
+
+declare(strict_types=1);
+
 namespace SqlTark\Clauses\Condition;
 
 use InvalidArgumentException;
@@ -10,7 +13,7 @@ class BasicStringCondition extends BasicCondition
      * @var bool $caseSensitive
      */
     protected $caseSensitive = false;
-    
+
     /**
      * @var string $escapeCharacter
      */
@@ -33,12 +36,9 @@ class BasicStringCondition extends BasicCondition
 
     public function setEscapeCharacter(string $value)
     {
-        if(empty($value))
-        {
+        if (empty($value)) {
             $value = null;
-        }
-        elseif(strlen($value) > 1)
-        {
+        } elseif (strlen($value) > 1) {
             throw new InvalidArgumentException("The EscapeCharacter can only contain a single character!");
         }
 

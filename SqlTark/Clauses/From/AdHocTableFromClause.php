@@ -1,4 +1,7 @@
 <?php
+
+declare(strict_types=1);
+
 namespace SqlTark\Clauses\From;
 
 use SqlTark\Clauses\AbstractClause;
@@ -9,7 +12,7 @@ class AdHocTableFromClause extends AbstractFrom
      * @var string[] $columns
      */
     protected $columns;
-    
+
     /**
      * @var array $values
      */

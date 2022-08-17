@@ -1,4 +1,7 @@
 <?php
+
+declare(strict_types=1);
+
 namespace SqlTark\Clauses;
 
 use SqlTark\Clauses\AbstractClause;
@@ -9,7 +12,7 @@ class OffsetClause extends AbstractClause
      * @var int $offset
      */
     protected $offset = 0;
-    
+
     public function getOffset(): int
     {
         return $this->offset;
@@ -40,7 +43,7 @@ class OffsetClause extends AbstractClause
         $self = parent::clone();
 
         $self->offset = $this->offset;
-        
+
         return $self;
     }
 }

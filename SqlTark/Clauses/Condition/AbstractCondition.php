@@ -1,4 +1,7 @@
 <?php
+
+declare(strict_types=1);
+
 namespace SqlTark\Clauses\Condition;
 
 use SqlTark\Clauses\AbstractClause;
@@ -9,7 +12,7 @@ abstract class AbstractCondition extends AbstractClause
      * @var bool $isOr
      */
     protected $isOr = false;
-    
+
     /**
      * @var bool $isNot
      */

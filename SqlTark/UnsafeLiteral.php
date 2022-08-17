@@ -1,4 +1,7 @@
 <?php
+
+declare(strict_types=1);
+
 namespace SqlTark;
 
 class UnsafeLiteral
@@ -20,13 +23,11 @@ class UnsafeLiteral
 
     public function __construct(string $value, bool $replaceQuotes)
     {
-        if(is_null($value))
-        {
+        if (is_null($value)) {
             $value = '';
         }
 
-        if($replaceQuotes)
-        {
+        if ($replaceQuotes) {
             $value = str_replace("'", "''", $value);
         }
 

@@ -1,4 +1,7 @@
 <?php
+
+declare(strict_types=1);
+
 namespace SqlTark\Clauses\Condition;
 
 use SqlTark\Query\Query;
@@ -10,7 +13,7 @@ class InQueryCondition extends AbstractCondition
      * @var string $column
      */
     protected $column;
-    
+
     /**
      * @var Query $query
      */

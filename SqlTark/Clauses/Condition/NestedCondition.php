@@ -1,11 +1,14 @@
 <?php
+
+declare(strict_types=1);
+
 namespace SqlTark\Clauses\Condition;
 
 use SqlTark\Query\Query;
 use SqlTark\Clauses\AbstractClause;
 
 class NestedCondition extends AbstractCondition
-{    
+{
     /**
      * @var Query $query
      */

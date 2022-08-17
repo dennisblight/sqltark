@@ -1,4 +1,7 @@
 <?php
+
+declare(strict_types=1);
+
 namespace SqlTark\Clauses\Insert;
 
 use SqlTark\Query\Query;
@@ -49,7 +52,7 @@ class InsertQueryClause extends AbstractInsertClause
     {
         /** @var InsertQueryClause */
         $self = parent::clone();
-        
+
         $self->query = clone $this->query;
         $self->columns = $this->columns;
 

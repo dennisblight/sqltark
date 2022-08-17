@@ -1,4 +1,7 @@
 <?php
+
+declare(strict_types=1);
+
 namespace SqlTark\Clauses\Insert;
 
 use SqlTark\Clauses\AbstractClause;
@@ -9,12 +12,12 @@ class InsertClause extends AbstractInsertClause
      * @var string[] $columns
      */
     protected $columns;
-    
+
     /**
      * @var array $values
      */
     protected $values;
-    
+
     /**
      * @var bool $returnId
      */
@@ -67,7 +70,7 @@ class InsertClause extends AbstractInsertClause
         $self->columns = $this->columns;
         $self->values = $this->values;
         $self->returnId = $this->returnId;
-        
+
         return $self;
     }
 }

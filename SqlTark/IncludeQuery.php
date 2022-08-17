@@ -1,4 +1,7 @@
 <?php
+
+declare(strict_types=1);
+
 namespace SqlTark;
 
 use SqlTark\Query\Query;
@@ -79,5 +82,4 @@ class IncludeQuery
     {
         $this->isMany = $value;
     }
-
 }

@@ -1,4 +1,7 @@
 <?php
+
+declare(strict_types=1);
+
 namespace SqlTark\Clauses;
 
 use SqlTark\Clauses\AbstractClause;
@@ -9,7 +12,7 @@ class LimitClause extends AbstractClause
      * @var int $limit
      */
     protected $limit = 0;
-    
+
     public function getLimit(): int
     {
         return $this->limit;
