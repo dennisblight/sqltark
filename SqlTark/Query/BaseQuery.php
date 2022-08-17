@@ -6,10 +6,8 @@ namespace SqlTark\Query;
 
 use InvalidArgumentException;
 use SqlTark\Clauses\AbstractClause;
-use SqlTark\Clauses\From\QueryFromClause;
 use SqlTark\Clauses\From\RawFromClause;
-
-use function PHPUnit\Framework\isNull;
+use SqlTark\Clauses\From\QueryFromClause;
 
 abstract class BaseQuery extends AbstractQuery
 {
@@ -189,10 +187,8 @@ abstract class BaseQuery extends AbstractQuery
     {
         $engineCode = $engineCode ?? $this->engineScope;
         $newClauses = [];
-        foreach($this->clauses as $item)
-        {
-            if($this->isValidComponent($item, $component, $engineCode))
-            {
+        foreach ($this->clauses as $item) {
+            if ($this->isValidComponent($item, $component, $engineCode)) {
                 $newClauses[] = $item;
             }
         }
@@ -228,7 +224,7 @@ abstract class BaseQuery extends AbstractQuery
         $result = $this->orFlag;
 
         $this->orFlag = false;
-        
+
         return $result;
     }
 
@@ -237,7 +233,7 @@ abstract class BaseQuery extends AbstractQuery
         $result = $this->notFlag;
 
         $this->notFlag = false;
-        
+
         return $result;
     }
 
@@ -246,8 +242,7 @@ abstract class BaseQuery extends AbstractQuery
         $query = clone $query;
         $query->setParent($this);
 
-        if(!is_null($alias))
-        {
+        if (!is_null($alias)) {
             $query->as($alias);
         }
 
