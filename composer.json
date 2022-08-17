@@ -1,0 +1,10 @@
+{
+    "name": "dennisblight/sqltark",
+    "version": "0.1",
+    "description": "SQL Query Builder for PHP",
+    "autoload": {
+        "psr-4": {
+            "SqlTark\\": "SqlTark/"
+        }
+    }
+}
