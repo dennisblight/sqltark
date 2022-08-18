@@ -6,9 +6,15 @@ namespace SqlTark\Query;
 
 use InvalidArgumentException;
 use SqlTark\Clauses\AbstractClause;
+use SqlTark\Clauses\Condition\BasicCondition;
 use SqlTark\Clauses\From\RawFromClause;
 use SqlTark\Clauses\From\QueryFromClause;
 
+/**
+ * @method BaseQuery where(string $column, mixed $value)
+ * 
+ * @method BaseQuery where(string $column, string $operator, mixed $value)
+ */
 abstract class BaseQuery extends AbstractQuery
 {
     /**
@@ -259,5 +265,71 @@ abstract class BaseQuery extends AbstractQuery
         $clause->setBindings($bindings);
 
         return $this->addOrReplaceComponent('from', $clause);
+    }
+
+    /**
+     * @ignore
+     */
+    public function where(string $column, $operator, $value = null): BaseQuery
+    {
+        if(func_num_args() == 2)
+        {
+            $value = $operator;
+            $operator = '=';
+        }
+
+        if(is_null($value))
+        {
+            return $this->not($operator != '=')->whereNull($column);
+        }
+
+        if(is_bool($value))
+        {
+            if($operator != '=')
+            {
+                $this->not();
+            }
+
+            return $value ? $this->whereTrue($column) : $this->whereFalse($column);
+        }
+
+        $clause = new BasicCondition;
+        $clause->setColumn($column);
+        $clause->setOperator($operator);
+        $clause->setValue($value);
+        $clause->setNot($this->getNot());
+        $clause->setOr($this->getOr());
+
+        return $this->addComponent('where', $clause);
+    }
+
+    public function whereNot(string $column, string $operator, $value): BaseQuery
+    {
+        return $this->not()->where($column, $operator, $value);
+    }
+
+    public function orWhere(string $column, string $operator, $value): BaseQuery
+    {
+        return $this->or()->where($column, $operator, $value);
+    }
+
+    public function orWhereNot(string $column, string $operator, $value): BaseQuery
+    {
+        return $this->or()->not()->where($column, $operator, $value);
+    }
+
+    public function whereNull(string $column)
+    {
+
+    }
+
+    public function whereTrue(string $column)
+    {
+
+    }
+
+    public function whereFalse(string $column)
+    {
+
     }
 }

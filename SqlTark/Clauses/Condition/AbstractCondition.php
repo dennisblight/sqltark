@@ -18,22 +18,22 @@ abstract class AbstractCondition extends AbstractClause
      */
     protected $isNot = false;
 
-    public function getIsOr(): bool
+    public function getOr(): bool
     {
         return $this->isOr;
     }
 
-    public function setIsOr(bool $value)
+    public function setOr(bool $value)
     {
         $this->isOr = $value;
     }
 
-    public function getIsNot(): bool
+    public function getNot(): bool
     {
         return $this->isNot;
     }
 
-    public function setIsNot(bool $value)
+    public function setNot(bool $value)
     {
         $this->isNot = $value;
     }

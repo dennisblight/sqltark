@@ -44,12 +44,12 @@ class BasicCondition extends AbstractCondition
         $this->operator = $value;
     }
 
-    public function getValue(): mixed
+    public function getValue()
     {
         return $this->value;
     }
 
-    public function setValue(mixed $value)
+    public function setValue($value)
     {
         $this->value = $value;
     }

@@ -33,17 +33,17 @@ class BetweenCondition extends AbstractCondition
         $this->column = $value;
     }
 
-    public function getLower(): mixed
+    public function getLower()
     {
         return $this->lower;
     }
 
-    public function setLower(mixed $value)
+    public function setLower($value)
     {
         $this->lower = $value;
     }
 
-    public function getHigher(): mixed
+    public function getHigher()
     {
         return $this->higher;
     }
