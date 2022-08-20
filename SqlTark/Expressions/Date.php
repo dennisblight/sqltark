@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace SqlTark\Expressions;
 
-class Time extends BaseExpression
+class Date extends BaseExpression
 {
     /**
      * @var string|Query

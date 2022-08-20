@@ -27,39 +27,39 @@ final class ComponentType
     public static function nameOf(int $component): ?string
     {
         switch ($component) {
-            case 1:
+            case self::Select:
                 return 'Select';
-            case 2:
+            case self::Aggregate:
                 return 'Aggregate';
-            case 3:
+            case self::From:
                 return 'From';
-            case 4:
+            case self::Join:
                 return 'Join';
-            case 5:
+            case self::Where:
                 return 'Where';
-            case 6:
+            case self::GroupBy:
                 return 'GroupBy';
-            case 7:
+            case self::Having:
                 return 'Having';
-            case 8:
+            case self::Window:
                 return 'Window';
-            case 9:
+            case self::Partition:
                 return 'Partition';
-            case 10:
+            case self::Frame:
                 return 'Frame';
-            case 11:
+            case self::OrderBy:
                 return 'OrderBy';
-            case 12:
+            case self::Limit:
                 return 'Limit';
-            case 13:
+            case self::Offset:
                 return 'Offset';
-            case 14:
+            case self::Combine:
                 return 'Combine';
-            case 15:
+            case self::CTE:
                 return 'CTE';
-            case 16:
+            case self::Insert:
                 return 'Insert';
-            case 17:
+            case self::Update:
                 return 'Update';
         }
     }

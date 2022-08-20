@@ -14,13 +14,13 @@ final class EngineType
     public static function nameOf(int $engine): ?string
     {
         switch ($engine) {
-            case 1:
+            case self::Generic:
                 return 'Generic';
-            case 2:
+            case self::MySql:
                 return 'MySql';
-            case 3:
+            case self::SqlServer:
                 return 'SqlServer';
-            case 4:
+            case self::PostgreSql:
                 return 'PostgreSql';
         }
     }
