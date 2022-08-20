@@ -4,7 +4,10 @@ declare(strict_types=1);
 
 namespace SqlTark;
 
-use Closure;
+use SqlTark\Expressions;
+use SqlTark\Query\Query;
+use InvalidArgumentException;
+use SqlTark\Expressions\BaseExpression;
 
 final class Helper
 {
@@ -28,7 +31,7 @@ final class Helper
         return $result;
     }
 
-    public static function replaceAll(string $subject, string $match, Closure $callback): string
+    public static function replaceAll(?string $subject, string $match, callable $callback): ?string
     {
         if (empty($subject) || strpos($subject, $match) === false) {
             return $subject;
@@ -38,7 +41,7 @@ final class Helper
 
         $splitProcess = [];
         for ($i = 1; $i < count($splitted); $i++) {
-            $splitProcess[] = $callback($i - 1) + $splitted[$i];
+            $splitProcess[] = $callback($i - 1) . $splitted[$i];
         }
 
         $result = array_reduce($splitProcess, function ($acc, $item) {
@@ -125,5 +128,39 @@ final class Helper
 
         $pattern = "/$escapeCharacter$identifier/";
         return preg_replace($pattern, $identifier, $nonEscapedReplace);
+    }
+
+    public static function resolveExpression($expr, string $name)
+    {
+        if (is_string($expr)) {
+            $expr = Expressions::column($expr);
+        } elseif (is_scalar($expr) || is_null($expr) || $expr instanceof \DateTime) {
+            $expr = Expressions::literal($expr);
+        } elseif (!($expr instanceof BaseExpression) && !($expr instanceof Query)) {
+            $class = get_class($expr);
+            throw new InvalidArgumentException(
+                "Could not resolve '$class' for $name parameter."
+            );
+        }
+
+        return $expr;
+    }
+
+    public static function resolveLiteral($expr, string $name)
+    {
+        if (is_scalar($expr) ||  is_null($expr) || $expr instanceof \DateTime) {
+            $expr = Expressions::literal($expr);
+        } elseif (!($expr instanceof BaseExpression) && !($expr instanceof Query)) {
+            if (is_object($expr) && method_exists($expr, '__toString')) {
+                $expr = Expressions::literal((string) $expr);
+            } else {
+                $class = get_class($expr);
+                throw new InvalidArgumentException(
+                    "Could not resolve '$class' for $name parameter."
+                );
+            }
+        }
+
+        return $expr;
     }
 }
