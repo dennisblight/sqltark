@@ -11,12 +11,12 @@ abstract class AbstractFrom extends AbstractComponent
      */
     protected $alias;
 
-    public function getAlias(): string
+    public function getAlias(): ?string
     {
         return $this->alias;
     }
 
-    public function setAlias(string $value)
+    public function setAlias(?string $value)
     {
         $this->alias = $value;
     }
