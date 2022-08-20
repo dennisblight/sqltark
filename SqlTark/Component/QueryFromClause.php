@@ -24,9 +24,9 @@ class QueryFromClause extends AbstractFrom
         $this->query = $value;
     }
 
-    public function getAlias(): string
+    public function getAlias(): ?string
     {
-        return $this->alias ?: $this->query->queryAlias;
+        return $this->alias ?: $this->query->getAlias();
     }
 
     /**
