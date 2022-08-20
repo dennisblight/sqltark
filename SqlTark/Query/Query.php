@@ -4,87 +4,65 @@ declare(strict_types=1);
 
 namespace SqlTark\Query;
 
-use InvalidArgumentException;
-use SqlTark\Component\AdHocTableFromClause;
-use SqlTark\Component\ComponentType;
-use SqlTark\Component\QueryFromClause;
-use SqlTark\Query\Interfaces\ConditionInterface;
+use SqlTark\Query\BaseQuery;
+use SqlTark\Query\Traits\OrderTrait;
+use SqlTark\Query\Traits\PagingTrait;
+use SqlTark\Query\Traits\SelectTrait;
 use SqlTark\Query\Traits\ConditionTrait;
+use SqlTark\Query\Traits\AdvancedFromTrait;
+use SqlTark\Query\Interfaces\ConditionInterface;
 
-/**
- * @method Query from(Query $query, ?string $alias = null)
- * 
- * @method Query from(callable $callback, ?string $alias = null)
- */
 class Query extends BaseQuery implements ConditionInterface
 {
-    use ConditionTrait;
+    use SelectTrait, ConditionTrait, PagingTrait, OrderTrait, AdvancedFromTrait;
 
-    public function __construct($table = null)
+    /**
+     * @var bool $distinct
+     */
+    protected $distinct = false;
+
+    /**
+     * @var ?string $alias
+     */
+    protected $alias;
+
+    public function getAlias(): ?string
     {
-        $this->from($table);
+        return $this->alias;
+    }
+
+    public function setAlias(?string $alias)
+    {
+        $this->alias = $alias;
     }
 
     /**
-     * @return Query
+     * @return static
      */
-    public function from($table, ?string $alias = null): BaseQuery
+    public function alias(?string $alias)
     {
-        $component = null;
-        if (is_callable($table)) {
-            $query = $this->newQuery()->setParent($this);
-            return $this->from($table($query), $alias);
-        } elseif ($table instanceof Query) {
-            $component = new QueryFromClause;
-
-            $component->setQuery($table);
-            $component->setAlias($alias);
-
-            return $this->addComponent(ComponentType::From, $component);
-        } else {
-            return parent::from($table, $alias);
-        }
+        $this->alias = $alias;
+        return $this;
     }
 
-    public function fromAdHoc(string $alias, array $columns, ?array $values = null): Query
+    public function isDistict(): bool
     {
-        $component = new AdHocTableFromClause;
+        return $this->distinct;
+    }
 
-        if (is_null($values)) {
-            if (isset($columns[0]) && is_array($columns[0])) {
-                $values = $columns;
-                $columns = array_keys($columns[0]);
-            } else {
-                throw new InvalidArgumentException(
-                    "Could not resolve 'columns' parameter. Columns should be array of array."
-                );
-            }
+    /**
+     * @return static
+     */
+    public function distinct($value = true): Query
+    {
+        $this->distinct = $value;
+        return $this;
+    }
+
+    public function __construct($table = null)
+    {
+        if (!is_null($table)) {
+            $this->from($table);
         }
-
-        $columnCount = count($columns);
-        foreach ($values as $item) {
-            if (is_countable($item)) {
-                $count = count($item);
-            } elseif (is_object($item) && method_exists($item, 'count')) {
-                $count = $item->count();
-            } else {
-                $class = get_class($item);
-                throw new InvalidArgumentException(
-                    "Array values '$class' must countable."
-                );
-            }
-
-            if ($count != $columnCount) {
-                throw new InvalidArgumentException(
-                    "Array values count must same with columns count."
-                );
-            }
-        }
-
-        $component->setAlias($alias);
-        $component->setColumns($columns);
-        $component->setValues(array_values($values));
-
-        return $this->addComponent(ComponentType::From, $component);
     }
 }

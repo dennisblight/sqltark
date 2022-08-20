@@ -10,15 +10,14 @@ use SqlTark\Compiler\EngineType;
 use SqlTark\Component\AbstractComponent;
 use SqlTark\Component\ComponentType;
 use SqlTark\Component\FromClause;
-use SqlTark\Component\QueryFromClause;
-use SqlTark\Component\RawFromClause;
+use SqlTark\Query\Interfaces\QueryInterface;
 
 /**
  * @method AbstractComponent[] getComponents() Return all components
  * 
- * @method BaseQuery from(string $table, ?string $alias = null)
+ * @method static from(string $table, ?string $alias = null)
  */
-abstract class BaseQuery
+abstract class BaseQuery implements QueryInterface
 {
     /**
      * @var BaseQuery $parent
@@ -72,12 +71,12 @@ abstract class BaseQuery
         return new Query;
     }
 
-    public function newChild(): BaseQuery
+    public function newChild(): Query
     {
         return $this->newQuery()->setParent($this)->setEngineScope($this->engineScope);
     }
 
-    public function addComponent(int $componentType, AbstractComponent $component, int $engineCode = 0): BaseQuery
+    public function addComponent(int $componentType, AbstractComponent $component, int $engineCode = 0): QueryInterface
     {
         $engineCode = $engineCode ?: $this->engineScope;
 
@@ -92,7 +91,7 @@ abstract class BaseQuery
         return $this;
     }
 
-    public function addOrReplaceComponent(int $componentType, AbstractComponent $component, int $engineCode = 0): BaseQuery
+    public function addOrReplaceComponent(int $componentType, AbstractComponent $component, int $engineCode = 0): QueryInterface
     {
         $engineCode = $engineCode ?: $this->engineScope;
 
@@ -125,7 +124,7 @@ abstract class BaseQuery
     /**
      * @return AbstractComponent[]
      */
-    public function getComponents(int $componentType = 0, int $engineCode = 0)
+    public function getComponents(int $componentType = 0, int $engineCode = 0): array
     {
         if (is_null($this->components)) {
             return [];
@@ -215,7 +214,32 @@ abstract class BaseQuery
         return $self;
     }
 
-    public function from($table, ?string $alias = null): BaseQuery
+    public function for(int $engine, callable $callback): QueryInterface
+    {
+        $this->engineScope = $engine;
+
+        $result = $callback($this);
+
+        $this->engineScope = 0;
+
+        return $result;
+    }
+
+    public function when(bool $condition, ?callable $whenTrue, ?callable $whenFalse): QueryInterface
+    {
+        if($condition && !is_null($whenTrue))
+        {
+            return $whenTrue($this);
+        }
+        elseif(!$condition && !is_null($whenFalse))
+        {
+            return $whenFalse($this);
+        }
+
+        return $this;
+    }
+
+    public function from($table, ?string $alias = null): QueryInterface
     {
         $component = null;
         if (is_string($table)) {
@@ -232,16 +256,6 @@ abstract class BaseQuery
             throw new InvalidArgumentException("Could not resolve '$str' as table");
         }
 
-        return $this->addComponent(ComponentType::From, $component);
-    }
-
-    public function fromRaw(string $expression, ...$bindings): BaseQuery
-    {
-        $component = new RawFromClause;
-
-        $component->setExpression($expression);
-        $component->setBindings($bindings);
-
-        return $this->addComponent(ComponentType::From, $component);
+        return $this->addOrReplaceComponent(ComponentType::From, $component);
     }
 }
