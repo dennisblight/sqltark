@@ -4,6 +4,9 @@ declare(strict_types=1);
 
 namespace SqlTark\Component;
 
+use SplFixedArray;
+use SqlTark\Expressions\BaseExpression;
+
 class RawFromClause extends AbstractFrom
 {
     /**
@@ -12,7 +15,7 @@ class RawFromClause extends AbstractFrom
     protected $expression;
 
     /**
-     * @var array $bindings
+     * @var SplFixedArray $bindings
      */
     protected $bindings;
 
@@ -26,12 +29,18 @@ class RawFromClause extends AbstractFrom
         $this->expression = $value;
     }
 
-    public function getBindings(): array
+    /**
+     * @return SplFixedArray<BaseExpression>
+     */
+    public function getBindings(): SplFixedArray
     {
         return $this->bindings;
     }
 
-    public function setBindings(array $value)
+    /**
+     * @param SplFixedArray<BaseExpression> $value
+     */
+    public function setBindings(SplFixedArray $value)
     {
         $this->bindings = $value;
     }
