@@ -6,6 +6,7 @@ namespace SqlTark\Query;
 
 use SplObjectStorage;
 use InvalidArgumentException;
+use MethodType;
 use SqlTark\Compiler\EngineType;
 use SqlTark\Component\AbstractComponent;
 use SqlTark\Component\ComponentType;
@@ -33,6 +34,26 @@ abstract class BaseQuery implements QueryInterface
      * @var int $engineScope
      */
     protected $engineScope = 0;
+
+    /**
+     * @var int $method
+     */
+    protected $method = 0;
+
+    public function getMethod(): int
+    {
+        return $this->method;
+    }
+
+    public function getMethodName(): ?string
+    {
+        return MethodType::nameOf($this->method);
+    }
+
+    public function setMethod(int $value)
+    {
+        $this->method = $value;
+    }
 
     public function getEngineScope(): int
     {
