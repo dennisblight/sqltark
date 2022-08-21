@@ -4,23 +4,23 @@ declare(strict_types=1);
 
 namespace SqlTark\Component;
 
-use SqlTark\Query\Query;
+use SqlTark\Query\Condition;
 
 class GroupCondition extends AbstractCondition
 {
     /**
-     * @var Query $query
+     * @var Condition $condition
      */
-    protected $query;
+    protected $condition;
 
-    public function getQuery(): Query
+    public function getCondition(): Condition
     {
-        return $this->query;
+        return $this->condition;
     }
 
-    public function setQuery(Query $value)
+    public function setCondition(Condition $value)
     {
-        $this->query = $value;
+        $this->condition = $value;
     }
 
     /**
@@ -31,7 +31,7 @@ class GroupCondition extends AbstractCondition
         /** @var GroupCondition */
         $self = parent::clone();
 
-        $self->query = clone $this->query;
+        $self->condition = clone $this->condition;
 
         return $self;
     }
