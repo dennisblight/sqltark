@@ -14,18 +14,21 @@ final class Expressions
     {
     }
 
-    public static function column(string $name): Column
+    public static function column(string $name, ?string $wrap = null): Column
     {
-        return new Column($name);
+        $result = new Column($name);
+        return $result->wrap($wrap);
     }
 
-    public static function variable(string $name): Variable
+    public static function variable(string $name, ?string $wrap = null): Variable
     {
-        return new Variable($name);
+        $result = new Variable($name);
+        return $result->wrap($wrap);
     }
 
-    public static function literal($value): Literal
+    public static function literal($value, ?string $wrap = null): Literal
     {
-        return new Literal($value);
+        $result = new Literal($value);
+        return $result->wrap($wrap);
     }
 }
