@@ -12,11 +12,15 @@ use SqlTark\Component\RawColumn;
 use SqlTark\Expressions;
 use SqlTark\Expressions\BaseExpression;
 use SqlTark\Query\BaseQuery;
+use SqlTark\Query\Interfaces\QueryInterface;
 use SqlTark\Query\Query;
 
 trait SelectTrait
 {
-    public function select(...$columns)
+    /**
+     * @return static
+     */
+    public function select(...$columns): QueryInterface
     {
         if (func_num_args() == 1 && is_iterable($columns[0])) {
             return $this->select(...iterator_to_array($columns[0]));
@@ -25,7 +29,6 @@ trait SelectTrait
         $hasCallable = false;
         foreach ($columns as $index => $column) {
             if (is_callable($column)) {
-                /** @var BaseQuery $this */
                 $query = $this->newChild();
                 $columns[$index] = $column($query);
                 $hasCallable = true;
@@ -51,14 +54,16 @@ trait SelectTrait
             $component = new ColumnClause;
             $component->setColumn($column);
 
-            /** @var BaseQuery $this */
             $this->addComponent(ComponentType::Select, $component);
         }
 
         return $this;
     }
 
-    public function selectRaw(string $expression, ...$bindings)
+    /**
+     * @return static
+     */
+    public function selectRaw(string $expression, ...$bindings): QueryInterface
     {
         $resolvedBindings = new SplFixedArray(count($bindings));
         foreach ($bindings as $index => $item) {
@@ -81,7 +86,6 @@ trait SelectTrait
         $component->setExpression($expression);
         $component->setBindings($resolvedBindings);
 
-        /** @var BaseQuery $this */
         return $this->addComponent(ComponentType::Select, $component);
     }
 }
