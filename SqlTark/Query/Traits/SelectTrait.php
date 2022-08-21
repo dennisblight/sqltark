@@ -11,45 +11,42 @@ use SqlTark\Component\ComponentType;
 use SqlTark\Component\RawColumn;
 use SqlTark\Expressions;
 use SqlTark\Expressions\BaseExpression;
-use SqlTark\Query\BaseQuery;
+use SqlTark\Helper;
 use SqlTark\Query\Interfaces\QueryInterface;
-use SqlTark\Query\Query;
 
 trait SelectTrait
 {
+    /**
+     * @var bool $distinct
+     */
+    protected $distinct = false;
+
+    public function isDistict(): bool
+    {
+        return $this->distinct;
+    }
+
+    /**
+     * @return static
+     */
+    public function distinct($value = true): QueryInterface
+    {
+        $this->distinct = $value;
+        return $this;
+    }
+
     /**
      * @return static
      */
     public function select(...$columns): QueryInterface
     {
         if (func_num_args() == 1 && is_iterable($columns[0])) {
-            return $this->select(...iterator_to_array($columns[0]));
-        }
-
-        $hasCallable = false;
-        foreach ($columns as $index => $column) {
-            if (is_callable($column)) {
-                $query = $this->newChild();
-                $columns[$index] = $column($query);
-                $hasCallable = true;
-            }
-        }
-
-        if ($hasCallable) {
-            return $this->select(...$columns);
+            foreach ($columns[0] as $column) $columns = $column;
         }
 
         foreach ($columns as $column) {
-            if (is_string($column)) {
-                $column = Expressions::column($column);
-            } elseif (is_scalar($column) || is_null($column) || $column instanceof \DateTime) {
-                $column = Expressions::literal($column);
-            } elseif (!($column instanceof BaseExpression || $column instanceof Query)) {
-                $class = get_class($column);
-                throw new InvalidArgumentException(
-                    "Could not resolve '$class' for column parameter."
-                );
-            }
+            $column = Helper::resolveQuery($column, $this);
+            $column = Helper::resolveExpression($column, 'column');
 
             $component = new ColumnClause;
             $component->setColumn($column);
@@ -67,14 +64,12 @@ trait SelectTrait
     {
         $resolvedBindings = new SplFixedArray(count($bindings));
         foreach ($bindings as $index => $item) {
-            if (is_scalar($item) || is_null($bindings)) {
+            if (is_scalar($item) || is_null($bindings) || $item instanceof \DateTime) {
                 $resolvedBindings[$index] = Expressions::literal($item);
             } elseif ($item instanceof BaseExpression) {
                 $resolvedBindings[$index] = $item;
-            } elseif (is_object($item) && method_exists($item, '__toString')) {
-                $resolvedBindings[$index] = Expressions::literal((string) $item);
             } else {
-                $class = get_class($item);
+                $class = Helper::getType($item);
                 throw new InvalidArgumentException(
                     "Could not resolve '$class' as binding."
                 );
