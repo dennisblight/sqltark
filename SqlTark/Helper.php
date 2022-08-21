@@ -8,6 +8,8 @@ use SqlTark\Expressions;
 use SqlTark\Query\Query;
 use InvalidArgumentException;
 use SqlTark\Expressions\BaseExpression;
+use SqlTark\Query\Condition;
+use SqlTark\Query\Join;
 
 final class Helper
 {
@@ -136,10 +138,10 @@ final class Helper
             $expr = Expressions::column($expr);
         } elseif (is_scalar($expr) || is_null($expr) || $expr instanceof \DateTime) {
             $expr = Expressions::literal($expr);
-        } elseif (!($expr instanceof BaseExpression) && !($expr instanceof Query)) {
-            $class = get_class($expr);
+        } elseif (!($expr instanceof BaseExpression || $expr instanceof Query)) {
+            $type = self::getType($expr);
             throw new InvalidArgumentException(
-                "Could not resolve '$class' for $name parameter."
+                "Could not resolve '$type' for $name parameter."
             );
         }
 
@@ -148,19 +150,56 @@ final class Helper
 
     public static function resolveLiteral($expr, string $name)
     {
-        if (is_scalar($expr) ||  is_null($expr) || $expr instanceof \DateTime) {
+        if (is_scalar($expr) || is_null($expr) || $expr instanceof \DateTime) {
             $expr = Expressions::literal($expr);
-        } elseif (!($expr instanceof BaseExpression) && !($expr instanceof Query)) {
-            if (is_object($expr) && method_exists($expr, '__toString')) {
-                $expr = Expressions::literal((string) $expr);
-            } else {
-                $class = get_class($expr);
-                throw new InvalidArgumentException(
-                    "Could not resolve '$class' for $name parameter."
-                );
-            }
+        } elseif (!($expr instanceof BaseExpression || $expr instanceof Query)) {
+            $type = self::getType($expr);
+            throw new InvalidArgumentException(
+                "Could not resolve '$type' for $name parameter."
+            );
         }
 
         return $expr;
+    }
+
+    public static function resolveQuery($callback, $ctx)
+    {
+        if(is_callable($callback))
+        {
+            $callback = $callback($ctx->newChild());
+            if(!($callback instanceof Query))
+            {
+                $class = Helper::getType($callback);
+                throw new InvalidArgumentException(
+                    "Invalid return from callback. Expected 'Query' found '$class'"
+                );
+            }
+        }
+        
+        return $callback;
+    }
+
+    public static function resolveJoin($callback, $ctx)
+    {
+        if(is_callable($callback))
+        {
+            $child = new Join;
+            $child->setParent($ctx);
+            $callback = $callback($ctx);
+            if(!($callback instanceof Join))
+            {
+                $class = Helper::getType($callback);
+                throw new InvalidArgumentException(
+                    "Invalid return from callback. Expected 'Join' found '$class'"
+                );
+            }
+        }
+        
+        return $callback;
+    }
+
+    public static function getType($value)
+    {
+        return is_object($value) ? get_class($value) : gettype($value);
     }
 }
