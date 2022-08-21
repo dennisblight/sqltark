@@ -4,31 +4,49 @@ declare(strict_types=1);
 
 namespace SqlTark\Component;
 
+use SqlTark\Query\Query;
+
 class FromClause extends AbstractFrom
 {
     /**
-     * @var string $table
+     * @var string|Query $table
      */
     protected $table;
 
-    public function getTable(): string
+    /**
+     * @return string|Query
+     */
+    public function getTable()
     {
         return $this->table;
     }
 
-    public function setTable(string $value)
+    /**
+     * @param string|Query $table
+     */
+    public function setTable($value)
     {
         $this->table = $value;
     }
 
     public function getAlias(): string
     {
-        if (stripos($this->table, ' as ') !== false) {
-            $segments = array_filter(explode(' ', $this->table), function ($item) {
-                return $item != '';
-            });
+        if(empty($this->alias))
+        {
+            if(is_string($this->table))
+            {
+                if (stripos($this->table, ' as ') !== false) {
+                    $segments = array_filter(explode(' ', $this->table), function ($item) {
+                        return $item != '';
+                    });
 
-            return $segments[2];
+                    return $segments[2];
+                }
+            }
+            elseif($this->table instanceof Query)
+            {
+                return $this->table->getAlias();
+            }
         }
 
         return $this->table;

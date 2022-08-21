@@ -1,5 +1,7 @@
 <?php
+
 declare(strict_types=1);
+
 namespace SqlTark\Query\Interfaces;
 
 use SqlTark\Query\Query;
@@ -14,7 +16,7 @@ interface QueryInterface
      * @return ?BaseQuery Parent
      */
     public function getParent(): ?BaseQuery;
-    
+
     /**
      * Set query parent
      * @param BaseQuery $value Parent
@@ -101,9 +103,4 @@ interface QueryInterface
      * @return static Self object
      */
     public function when(bool $condition, ?callable $whenTrue, ?callable $whenFalse): QueryInterface;
-
-    /**
-     * @return static Self object
-     */
-    public function from($table, ?string $alias = null): QueryInterface;
 }

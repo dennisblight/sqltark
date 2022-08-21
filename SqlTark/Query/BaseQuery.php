@@ -6,17 +6,12 @@ namespace SqlTark\Query;
 
 use SplObjectStorage;
 use InvalidArgumentException;
-use MethodType;
 use SqlTark\Compiler\EngineType;
 use SqlTark\Component\AbstractComponent;
-use SqlTark\Component\ComponentType;
-use SqlTark\Component\FromClause;
 use SqlTark\Query\Interfaces\QueryInterface;
 
 /**
  * @method AbstractComponent[] getComponents() Return all components
- * 
- * @method static from(string $table, ?string $alias = null)
  */
 abstract class BaseQuery implements QueryInterface
 {
@@ -38,7 +33,7 @@ abstract class BaseQuery implements QueryInterface
     /**
      * @var int $method
      */
-    protected $method = 0;
+    protected $method = MethodType::Select;
 
     public function getMethod(): int
     {
@@ -221,7 +216,10 @@ abstract class BaseQuery implements QueryInterface
         return $this->clone();
     }
 
-    public function clone(): BaseQuery
+    /**
+     * @return static
+     */
+    public function clone(): QueryInterface
     {
         $self = new static;
 
@@ -258,25 +256,5 @@ abstract class BaseQuery implements QueryInterface
         }
 
         return $this;
-    }
-
-    public function from($table, ?string $alias = null): QueryInterface
-    {
-        $component = null;
-        if (is_string($table)) {
-            $component = new FromClause;
-
-            $component->setTable($table);
-            $component->setAlias($alias);
-        } elseif (method_exists($table, '__toString')) {
-            return $this->from((string) $table, $alias);
-        } elseif (is_object($table)) {
-            return $this->from(get_class($table), $alias);
-        } else {
-            $str = get_class($table);
-            throw new InvalidArgumentException("Could not resolve '$str' as table");
-        }
-
-        return $this->addOrReplaceComponent(ComponentType::From, $component);
     }
 }
