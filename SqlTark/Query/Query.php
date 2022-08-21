@@ -11,10 +11,18 @@ use SqlTark\Query\Traits\SelectTrait;
 use SqlTark\Query\Traits\ConditionTrait;
 use SqlTark\Query\Traits\AdvancedFromTrait;
 use SqlTark\Query\Interfaces\ConditionInterface;
+use SqlTark\Query\Traits\AggregateTrait;
+use SqlTark\Query\Traits\GroupByTrait;
 
 class Query extends BaseQuery implements ConditionInterface
 {
-    use SelectTrait, ConditionTrait, PagingTrait, OrderTrait, AdvancedFromTrait;
+    use SelectTrait,
+        ConditionTrait,
+        PagingTrait,
+        OrderTrait,
+        AdvancedFromTrait,
+        AggregateTrait,
+        GroupByTrait;
 
     /**
      * @var bool $distinct
