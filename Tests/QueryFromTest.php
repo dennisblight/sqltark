@@ -48,17 +48,17 @@ class QueryFromTest extends TestCase
 
         $q->from($q2, 't2');
         $component = $q->getOneComponent(ComponentType::From);
-        $this->assertInstanceOf(QueryFromClause::class, $component);
+        $this->assertInstanceOf(FromClause::class, $component);
 
         $q->from($q3->alias('t3'));
         $component = $q->getOneComponent(ComponentType::From);
-        $this->assertInstanceOf(QueryFromClause::class, $component);
+        $this->assertInstanceOf(FromClause::class, $component);
 
         $q->from(function($q) {
             return $q->from('table')->alias('t4');
         });
         $component = $q->getOneComponent(ComponentType::From);
-        $this->assertInstanceOf(QueryFromClause::class, $component);
+        $this->assertInstanceOf(FromClause::class, $component);
     }
 
     public function testFromAdHoc()
