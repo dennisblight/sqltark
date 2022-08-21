@@ -11,6 +11,7 @@ use SqlTark\Component\OrderClause;
 use SqlTark\Component\RandomOrder;
 use SqlTark\Component\ComponentType;
 use SqlTark\Expressions\BaseExpression;
+use SqlTark\Helper;
 use SqlTark\Query\Interfaces\QueryInterface;
 
 trait OrderTrait
@@ -21,34 +22,12 @@ trait OrderTrait
     public function orderBy(...$columns): QueryInterface
     {
         if (func_num_args() == 1 && is_iterable($columns[0])) {
-            return $this->orderBy(...iterator_to_array($columns[0]));
-        }
-
-        $hasCallable = false;
-        foreach ($columns as $index => $column) {
-            if (is_callable($column)) {
-                /** @var BaseQuery $this */
-                $query = $this->newChild();
-                $columns[$index] = $column($query);
-                $hasCallable = true;
-            }
-        }
-
-        if ($hasCallable) {
-            return $this->orderBy(...$columns);
+            foreach($columns[0] as $column) $columns = $column;
         }
 
         foreach ($columns as $column) {
-            if (is_string($column)) {
-                $column = Expressions::column($column);
-            } elseif (is_scalar($column) || is_null($column) || $column instanceof \DateTime) {
-                $column = Expressions::literal($column);
-            } elseif (!($column instanceof BaseExpression || $column instanceof Query)) {
-                $class = get_class($column);
-                throw new InvalidArgumentException(
-                    "Could not resolve '$class' for column parameter."
-                );
-            }
+            $column = Helper::resolveQuery($column, $this);
+            $column = Helper::resolveExpression($column, 'column');
 
             $component = new OrderClause;
             $component->setColumn($column);
@@ -67,34 +46,12 @@ trait OrderTrait
     public function orderByDesc(...$columns): QueryInterface
     {
         if (func_num_args() == 1 && is_iterable($columns[0])) {
-            return $this->orderByDesc(...iterator_to_array($columns[0]));
-        }
-
-        $hasCallable = false;
-        foreach ($columns as $index => $column) {
-            if (is_callable($column)) {
-                /** @var BaseQuery $this */
-                $query = $this->newChild();
-                $columns[$index] = $column($query);
-                $hasCallable = true;
-            }
-        }
-
-        if ($hasCallable) {
-            return $this->orderByDesc(...$columns);
+            foreach($columns[0] as $column) $columns = $column;
         }
 
         foreach ($columns as $column) {
-            if (is_string($column)) {
-                $column = Expressions::column($column);
-            } elseif (is_scalar($column) || is_null($column) || $column instanceof \DateTime) {
-                $column = Expressions::literal($column);
-            } elseif (!($column instanceof BaseExpression || $column instanceof Query)) {
-                $class = get_class($column);
-                throw new InvalidArgumentException(
-                    "Could not resolve '$class' for column parameter."
-                );
-            }
+            $column = Helper::resolveQuery($column, $this);
+            $column = Helper::resolveExpression($column, 'column');
 
             $component = new OrderClause;
             $component->setColumn($column);

@@ -11,6 +11,7 @@ use SqlTark\Component\ComponentType;
 use SqlTark\Component\RawColumn;
 use SqlTark\Expressions;
 use SqlTark\Expressions\BaseExpression;
+use SqlTark\Helper;
 use SqlTark\Query\Interfaces\QueryInterface;
 use SqlTark\Query\Query;
 
@@ -21,12 +22,9 @@ trait GroupByTrait
      */
     public function groupBy($columns): QueryInterface
     {
-        if(is_callable($columns))
-        {
-            $query = $this->newChild();
-            return $this->groupBy($columns($query));
-        }
-        elseif(is_iterable($columns))
+        $columns = Helper::resolveQuery($columns, $this);
+
+        if(is_iterable($columns))
         {
             foreach($columns as $column)
             {
@@ -43,30 +41,7 @@ trait GroupByTrait
             return $this;
         }
 
-        $resolvedColumn = null;
-        if(is_string($columns))
-        {
-            $resolvedColumn = Expressions::column($columns);
-        }
-        elseif(is_scalar($columns) || is_null($columns))
-        {
-            $resolvedColumn = Expressions::literal($columns);
-        }
-        elseif(is_object($columns) && method_exists($columns, '__toString'))
-        {
-            $resolvedColumn = Expressions::literal((string) $columns);
-        }
-        elseif($columns instanceof Query || $columns instanceof BaseExpression)
-        {
-            $resolvedColumn = $columns;
-        }
-        else
-        {
-            $class = get_class($columns);
-            throw new InvalidArgumentException(
-                "Could not resolve '$class' from columns"
-            );
-        }
+        $resolvedColumn = Helper::resolveExpression($columns, 'column');
 
         $component = new ColumnClause;
         $component->setColumn($resolvedColumn);
@@ -81,14 +56,12 @@ trait GroupByTrait
     {
         $resolvedBindings = new SplFixedArray(count($bindings));
         foreach ($bindings as $index => $item) {
-            if (is_scalar($item) || is_null($bindings)) {
+            if (is_scalar($item) || is_null($item) || $item instanceof \DateTime) {
                 $resolvedBindings[$index] = Expressions::literal($item);
             } elseif ($item instanceof BaseExpression) {
                 $resolvedBindings[$index] = $item;
-            } elseif (is_object($item) && method_exists($item, '__toString')) {
-                $resolvedBindings[$index] = Expressions::literal((string) $item);
             } else {
-                $class = get_class($item);
+                $class = Helper::getType($item);
                 throw new InvalidArgumentException(
                     "Could not resolve '$class' as binding."
                 );

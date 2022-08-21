@@ -4,15 +4,11 @@ declare(strict_types=1);
 
 namespace SqlTark\Query\Traits;
 
-use InvalidArgumentException;
-use MethodType;
-use SplFixedArray;
 use SqlTark\Component\AggregateClause;
 use SqlTark\Component\ComponentType;
-use SqlTark\Expressions;
-use SqlTark\Expressions\BaseExpression;
+use SqlTark\Helper;
 use SqlTark\Query\Interfaces\QueryInterface;
-use SqlTark\Query\Query;
+use SqlTark\Query\MethodType;
 
 trait AggregateTrait
 {
@@ -22,30 +18,8 @@ trait AggregateTrait
      */
     public function asAggregate(string $type, $column = null): QueryInterface
     {
-        if(is_string($column))
-        {
-            $column = Expressions::column($column);
-        }
-        elseif(is_scalar($column) || is_null($column))
-        {
-            $column = Expressions::literal($column);
-        }
-        elseif(is_callable($column))
-        {
-            $query = $this->newChild();
-            return $this->asAggregate($type, $column($query));
-        }
-        elseif(is_object($column) && method_exists($column, '__toString'))
-        {
-            $column = Expressions::column((string) $column);
-        }
-        elseif(!($column instanceof Query || $column instanceof BaseExpression))
-        {
-            $class = get_class($column);
-            throw new InvalidArgumentException(
-                "Could not resolve '$class' for column parameter."
-            );
-        }
+        $column = Helper::resolveQuery($column, $this);
+        $column = Helper::resolveExpression($column, 'column');
 
         $this->setMethod(MethodType::Aggregate);
 
