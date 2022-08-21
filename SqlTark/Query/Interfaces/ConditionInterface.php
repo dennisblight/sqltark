@@ -7,12 +7,6 @@ namespace SqlTark\Query\Interfaces;
 interface ConditionInterface extends QueryInterface
 {
     /**
-     * Where and condtition
-     * @return static Self object
-     */
-    public function and(): ConditionInterface;
-
-    /**
      * Where or condtition
      * @return static Self object
      */
@@ -233,13 +227,13 @@ interface ConditionInterface extends QueryInterface
      * Perform grouping condition using ```and``` clause
      * @return static Self object
      */
-    public function whereGroup(callable $group): ConditionInterface;
+    public function whereGroup($group): ConditionInterface;
 
     /**
      * Perform grouping condition using ```or``` clause
      * @return static Self object
      */
-    public function orWhereGroup(callable $group): ConditionInterface;
+    public function orWhereGroup($group): ConditionInterface;
 
     /**
      * Where values in subquery is exists condition using ```and``` clause

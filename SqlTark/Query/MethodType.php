@@ -2,13 +2,16 @@
 
 declare(strict_types=1);
 
+namespace SqlTark\Query;
+
 final class MethodType
 {
     public const Select = 0;
     public const Aggregate = 1;
-    public const Insert = 2;
-    public const Update = 3;
-    public const Delete = 4;
+    public const Join = 2;
+    public const Insert = 3;
+    public const Update = 4;
+    public const Delete = 5;
 
     public static function nameOf(int $method): ?string
     {
