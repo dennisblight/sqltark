@@ -60,8 +60,13 @@ class InCondition extends AbstractCondition
         /** @var InCondition */
         $self = parent::clone();
 
-        $self->column = $this->column;
-        $self->values = $this->values;
+        $self->column = $this->column instanceof Query
+            ? clone $this->column
+            : $this->column;
+            
+        $self->values = $this->values instanceof Query
+            ? clone $this->values
+            : $this->values;
 
         return $self;
     }

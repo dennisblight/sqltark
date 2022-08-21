@@ -7,15 +7,30 @@ namespace SqlTark\Component;
 use SqlTark\Expressions\BaseExpression;
 use SqlTark\Query\Query;
 
-class NullCondition extends AbstractCondition
+class AggregateClause extends AbstractComponent
 {
     /**
-     * @var BaseExpression|Query $column
+     * @var string $type
+     */
+    protected $type;
+
+    /**
+     * @var 
      */
     protected $column;
 
+    public function getType(): string
+    {
+        return $this->type;
+    }
+
+    public function setType(string $value)
+    {
+        $this->type = $value;
+    }
+
     /**
-     * @return BaseExpression|Query
+     * @return Query|BaseExpression
      */
     public function getColumn()
     {
@@ -23,21 +38,19 @@ class NullCondition extends AbstractCondition
     }
 
     /**
-     * @param BaseExpression|Query $value
+     * @param Query|BaseExpression
      */
     public function setColumn($value)
     {
         $this->column = $value;
     }
 
-    /**
-     * @return FromClause
-     */
-    public function clone(): AbstractComponent
+    public function clone()
     {
-        /** @var FromClause */
         $self = parent::clone();
 
+        $self->type = $this->type;
+        
         $self->column = $this->column instanceof Query
             ? clone $this->column
             : $this->column;

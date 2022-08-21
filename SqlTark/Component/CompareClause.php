@@ -74,9 +74,15 @@ class CompareClause extends AbstractCondition
         /** @var CompareClause */
         $self = parent::clone();
 
-        $self->left = $this->left;
+        $self->left = $this->left instanceof Query
+            ? clone $this->left
+            : $this->left;
+
         $self->operator = $this->operator;
-        $self->right = $this->right;
+        
+        $self->right = $this->right instanceof Query
+            ? clone $this->right
+            : $this->right;
 
         return $self;
     }

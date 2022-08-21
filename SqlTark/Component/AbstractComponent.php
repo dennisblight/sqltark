@@ -51,11 +51,17 @@ abstract class AbstractComponent
         return $this;
     }
 
+    /**
+     * @return static Clone of current object
+     */
     public function __clone()
     {
         return $this->clone();
     }
 
+    /**
+     * @return static Clone of current object
+     */
     public function clone()
     {
         $self = new static();

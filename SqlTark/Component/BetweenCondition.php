@@ -80,9 +80,17 @@ class BetweenCondition extends AbstractCondition
         /** @var BetweenCondition */
         $self = parent::clone();
 
-        $self->lower = $this->lower;
-        $self->column = $this->column;
-        $self->higher = $this->higher;
+        $self->lower = $this->lower instanceof Query
+            ? clone $this->lower
+            : $this->lower;
+            
+        $self->column = $this->column instanceof Query
+            ? clone $this->column
+            : $this->column;
+
+        $self->higher = $this->higher instanceof Query
+            ? clone $this->higher
+            : $this->higher;
 
         return $self;
     }

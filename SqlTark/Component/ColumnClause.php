@@ -37,7 +37,9 @@ class ColumnClause extends AbstractColumn
         /** @var ColumnClause */
         $self = parent::clone();
 
-        $self->column = $this->column;
+        $self->column = $this->column instanceof Query
+            ? clone $this->column
+            : $this->column;
 
         return $self;
     }

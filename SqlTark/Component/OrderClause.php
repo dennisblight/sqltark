@@ -55,7 +55,10 @@ class OrderClause extends AbstractOrder
         /** @var OrderClause */
         $self = parent::clone();
 
-        $self->column = $this->column;
+        $self->column = $this->column instanceof Query
+            ? clone $this->column
+            : $this->column;
+            
         $self->ascending = $this->ascending;
 
         return $self;

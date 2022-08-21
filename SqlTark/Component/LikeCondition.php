@@ -104,9 +104,16 @@ class LikeCondition extends AbstractCondition
         /** @var LikeCondition */
         $self = parent::clone();
 
-        $self->left = $this->left;
+        $self->left = $this->left instanceof Query
+            ? clone $this->left
+            : $this->left;
+
         $self->type = $this->type;
-        $self->right = $this->right;
+        
+        $self->right = $this->right instanceof Query
+            ? clone $this->right
+            : $this->right;
+
         $self->caseSensitive = $this->caseSensitive;
         $self->escapeCharacter = $this->escapeCharacter;
 
