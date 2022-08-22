@@ -8,7 +8,6 @@ use SqlTark\Expressions;
 use SqlTark\Query\Query;
 use InvalidArgumentException;
 use SqlTark\Expressions\BaseExpression;
-use SqlTark\Query\Condition;
 use SqlTark\Query\Join;
 
 final class Helper
@@ -67,8 +66,13 @@ final class Helper
         return $result;
     }
 
-    public static function countIterable(iterable $array): int
+    public static function countIterable($array): int
     {
+        if(is_countable($array))
+        {
+            return count($array);
+        }
+
         $count = 0;
         foreach ($array as $_item) $count++;
         return $count;
