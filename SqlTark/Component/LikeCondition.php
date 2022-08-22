@@ -10,9 +10,9 @@ use SqlTark\Expressions\BaseExpression;
 class LikeCondition extends AbstractCondition
 {
     /**
-     * @var BaseExpression|Query $left
+     * @var BaseExpression|Query $column
      */
-    protected $left = null;
+    protected $column = null;
 
     /**
      * @var int $type
@@ -20,9 +20,9 @@ class LikeCondition extends AbstractCondition
     protected $type = LikeType::Like;
 
     /**
-     * @var BaseExpression|Query $right
+     * @var string $value
      */
-    protected $right = null;
+    protected $value;
 
     /**
      * @var bool $caseSensitive
@@ -57,17 +57,17 @@ class LikeCondition extends AbstractCondition
     /**
      * @return BaseExpression|Query
      */
-    public function getLeft()
+    public function getColumn()
     {
-        return $this->left;
+        return $this->column;
     }
 
     /**
      * @param BaseExpression|Query $value
      */
-    public function setLeft($value)
+    public function setColumn($value)
     {
-        $this->left = $value;
+        $this->column = $value;
     }
 
     public function getType(): int
@@ -81,19 +81,19 @@ class LikeCondition extends AbstractCondition
     }
 
     /**
-     * @return BaseExpression|Query
+     * @return string
      */
-    public function getRight()
+    public function getValue()
     {
-        return $this->right;
+        return $this->value;
     }
 
     /**
-     * @param BaseExpression|Query $value
+     * @param string $value
      */
-    public function setRight($value)
+    public function setValue($value)
     {
-        $this->right = $value;
+        $this->value = $value;
     }
 
     /**
@@ -104,15 +104,13 @@ class LikeCondition extends AbstractCondition
         /** @var LikeCondition */
         $self = parent::clone();
 
-        $self->left = $this->left instanceof Query
-            ? clone $this->left
-            : $this->left;
+        $self->column = $this->column instanceof Query
+            ? clone $this->column
+            : $this->column;
 
         $self->type = $this->type;
         
-        $self->right = $this->right instanceof Query
-            ? clone $this->right
-            : $this->right;
+        $self->value = $this->value;
 
         $self->caseSensitive = $this->caseSensitive;
         $self->escapeCharacter = $this->escapeCharacter;

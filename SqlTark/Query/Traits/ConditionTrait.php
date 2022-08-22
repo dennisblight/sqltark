@@ -81,82 +81,82 @@ trait ConditionTrait
         return $this->or()->not()->whereNull($column);
     }
 
-    public function whereLike($column, $value, bool $caseSensitive, ?string $escapeCharacter): ConditionInterface
+    public function whereLike($column, string $value, bool $caseSensitive, ?string $escapeCharacter): ConditionInterface
     {
         return $this->withWhere()->conditionLike($column, $value, $caseSensitive, $escapeCharacter, LikeType::Like);
     }
 
-    public function orWhereLike($column, $value, bool $caseSensitive, ?string $escapeCharacter): ConditionInterface
+    public function orWhereLike($column, string $value, bool $caseSensitive, ?string $escapeCharacter): ConditionInterface
     {
         return $this->or()->whereLike($column, $value, $caseSensitive, $escapeCharacter);
     }
 
-    public function whereNotLike($column, $value, bool $caseSensitive, ?string $escapeCharacter): ConditionInterface
+    public function whereNotLike($column, string $value, bool $caseSensitive, ?string $escapeCharacter): ConditionInterface
     {
         return $this->not()->whereLike($column, $value, $caseSensitive, $escapeCharacter);
     }
 
-    public function orWhereNotLike($column, $value, bool $caseSensitive, ?string $escapeCharacter): ConditionInterface
+    public function orWhereNotLike($column, string $value, bool $caseSensitive, ?string $escapeCharacter): ConditionInterface
     {
         return $this->or()->not()->whereLike($column, $value, $caseSensitive, $escapeCharacter);
     }
 
-    public function whereStarts($column, $value, bool $caseSensitive, ?string $escapeCharacter): ConditionInterface
+    public function whereStarts($column, string $value, bool $caseSensitive, ?string $escapeCharacter): ConditionInterface
     {
         return $this->withWhere()->conditionLike($column, $value, $caseSensitive, $escapeCharacter, LikeType::Starts);
     }
 
-    public function orWhereStarts($column, $value, bool $caseSensitive, ?string $escapeCharacter): ConditionInterface
+    public function orWhereStarts($column, string $value, bool $caseSensitive, ?string $escapeCharacter): ConditionInterface
     {
         return $this->or()->whereStarts($column, $value, $caseSensitive, $escapeCharacter);
     }
 
-    public function whereNotStarts($column, $value, bool $caseSensitive, ?string $escapeCharacter): ConditionInterface
+    public function whereNotStarts($column, string $value, bool $caseSensitive, ?string $escapeCharacter): ConditionInterface
     {
         return $this->not()->whereStarts($column, $value, $caseSensitive, $escapeCharacter);
     }
 
-    public function orWhereNotStarts($column, $value, bool $caseSensitive, ?string $escapeCharacter): ConditionInterface
+    public function orWhereNotStarts($column, string $value, bool $caseSensitive, ?string $escapeCharacter): ConditionInterface
     {
         return $this->or()->not()->whereStarts($column, $value, $caseSensitive, $escapeCharacter);
     }
 
-    public function whereEnds($column, $value, bool $caseSensitive, ?string $escapeCharacter): ConditionInterface
+    public function whereEnds($column, string $value, bool $caseSensitive, ?string $escapeCharacter): ConditionInterface
     {
         return $this->withWhere()->conditionLike($column, $value, $caseSensitive, $escapeCharacter, LikeType::Ends);
     }
 
-    public function orWhereEnds($column, $value, bool $caseSensitive, ?string $escapeCharacter): ConditionInterface
+    public function orWhereEnds($column, string $value, bool $caseSensitive, ?string $escapeCharacter): ConditionInterface
     {
         return $this->or()->whereEnds($column, $value, $caseSensitive, $escapeCharacter);
     }
 
-    public function whereNotEnds($column, $value, bool $caseSensitive, ?string $escapeCharacter): ConditionInterface
+    public function whereNotEnds($column, string $value, bool $caseSensitive, ?string $escapeCharacter): ConditionInterface
     {
         return $this->not()->whereEnds($column, $value, $caseSensitive, $escapeCharacter);
     }
 
-    public function orWhereNotEnds($column, $value, bool $caseSensitive, ?string $escapeCharacter): ConditionInterface
+    public function orWhereNotEnds($column, string $value, bool $caseSensitive, ?string $escapeCharacter): ConditionInterface
     {
         return $this->or()->not()->whereEnds($column, $value, $caseSensitive, $escapeCharacter);
     }
 
-    public function whereContains($column, $value, bool $caseSensitive, ?string $escapeCharacter): ConditionInterface
+    public function whereContains($column, string $value, bool $caseSensitive, ?string $escapeCharacter): ConditionInterface
     {
         return $this->withWhere()->conditionLike($column, $value, $caseSensitive, $escapeCharacter, LikeType::Contains);
     }
 
-    public function orWhereContains($column, $value, bool $caseSensitive, ?string $escapeCharacter): ConditionInterface
+    public function orWhereContains($column, string $value, bool $caseSensitive, ?string $escapeCharacter): ConditionInterface
     {
         return $this->or()->whereContains($column, $value, $caseSensitive, $escapeCharacter);
     }
 
-    public function whereNotContains($column, $value, bool $caseSensitive, ?string $escapeCharacter): ConditionInterface
+    public function whereNotContains($column, string $value, bool $caseSensitive, ?string $escapeCharacter): ConditionInterface
     {
         return $this->not()->whereContains($column, $value, $caseSensitive, $escapeCharacter);
     }
 
-    public function orWhereNotContains($column, $value, bool $caseSensitive, ?string $escapeCharacter): ConditionInterface
+    public function orWhereNotContains($column, string $value, bool $caseSensitive, ?string $escapeCharacter): ConditionInterface
     {
         return $this->or()->not()->whereContains($column, $value, $caseSensitive, $escapeCharacter);
     }

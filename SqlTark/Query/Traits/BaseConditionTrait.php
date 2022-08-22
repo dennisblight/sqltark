@@ -230,21 +230,18 @@ trait BaseConditionTrait
         return $this->addComponent($componentType, $component);
     }
 
-    protected function conditionLike($column, $value, bool $caseSensitive, ?string $escapeCharacter, $type = LikeType::Like): ConditionInterface
+    protected function conditionLike($column, string $value, bool $caseSensitive, ?string $escapeCharacter, $type = LikeType::Like): ConditionInterface
     {
         $column = Helper::resolveQuery($column, $this);
-        $value = Helper::resolveQuery($value, $this);
-
         $column = Helper::resolveExpression($column, 'column');
-        $value = Helper::resolveLiteral($value, 'value');
 
         $component = new LikeCondition;
 
         $component->setNot($this->getNot());
         $component->setOr($this->getOr());
-        $component->setLeft($column);
+        $component->setColumn($column);
         $component->setType($type);
-        $component->setRight($value);
+        $component->setValue($value);
         $component->setEscapeCharacter($escapeCharacter);
         $component->setCaseSensitive($caseSensitive);
         $componentType = $this->getHaving() ? ComponentType::Having : ComponentType::Where;
