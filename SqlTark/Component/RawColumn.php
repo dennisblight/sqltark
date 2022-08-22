@@ -15,7 +15,7 @@ class RawColumn extends AbstractColumn
     protected $expression;
 
     /**
-     * @var SplFixedArray $bindings
+     * @var SplFixedArray<BaseExpression> $bindings
      */
     protected $bindings;
 

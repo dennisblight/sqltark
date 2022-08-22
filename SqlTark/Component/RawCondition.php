@@ -15,7 +15,7 @@ class RawCondition extends AbstractCondition
     protected $expression;
 
     /**
-     * @var SplFixedArray $bindings
+     * @var SplFixedArray<BaseExpression> $bindings
      */
     protected $bindings;
 
