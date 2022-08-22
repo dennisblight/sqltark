@@ -41,7 +41,7 @@ trait SelectTrait
     public function select(...$columns): QueryInterface
     {
         if (func_num_args() == 1 && is_iterable($columns[0])) {
-            foreach ($columns[0] as $column) $columns = $column;
+            $columns = $columns[0];
         }
 
         foreach ($columns as $column) {
@@ -64,7 +64,7 @@ trait SelectTrait
     {
         $resolvedBindings = new SplFixedArray(count($bindings));
         foreach ($bindings as $index => $item) {
-            if (is_scalar($item) || is_null($bindings) || $item instanceof \DateTime) {
+            if (is_scalar($item) || is_null($item) || $item instanceof \DateTime) {
                 $resolvedBindings[$index] = Expressions::literal($item);
             } elseif ($item instanceof BaseExpression) {
                 $resolvedBindings[$index] = $item;

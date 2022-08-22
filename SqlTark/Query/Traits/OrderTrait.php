@@ -22,7 +22,7 @@ trait OrderTrait
     public function orderBy(...$columns): QueryInterface
     {
         if (func_num_args() == 1 && is_iterable($columns[0])) {
-            foreach($columns[0] as $column) $columns = $column;
+            $columns = $columns[0];
         }
 
         foreach ($columns as $column) {
@@ -46,7 +46,7 @@ trait OrderTrait
     public function orderByDesc(...$columns): QueryInterface
     {
         if (func_num_args() == 1 && is_iterable($columns[0])) {
-            foreach($columns[0] as $column) $columns = $column;
+            $columns = $columns[0];
         }
 
         foreach ($columns as $column) {
