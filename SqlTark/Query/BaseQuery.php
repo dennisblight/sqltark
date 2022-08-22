@@ -73,7 +73,7 @@ abstract class BaseQuery implements QueryInterface
 
     public function setParent(BaseQuery $value): BaseQuery
     {
-        if ($this == $value) {
+        if ($this === $value) {
             $class = get_class($value);
             throw new InvalidArgumentException("Cannot set the same $class as a parent of itself");
         }
