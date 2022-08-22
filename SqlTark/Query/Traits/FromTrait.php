@@ -76,44 +76,91 @@ trait FromTrait
     /**
      * @return static Self object
      */
-    public function fromAdHoc(string $alias, array $columns, ?array $values = null): QueryInterface
+    public function fromAdHoc(string $alias, iterable $columns, ?iterable $values = null): QueryInterface
     {
-        $component = new AdHocTableFromClause;
+        $columnCount = null;
+        $resolvedColumns = null;
+        if(func_num_args() == 2)
+        {
+            $resolvedColumns = [];
+            $columnCount = 0;
+            foreach($columns as $row)
+            {
+                foreach($row as $column => $value)
+                {
+                    $resolvedColumns[] = $column;
+                    $columnCount++;
+                }
+                break;
+            }
 
-        if (is_null($values)) {
-            if (isset($columns[0]) && is_array($columns[0])) {
-                $values = $columns;
-                $columns = array_keys($columns[0]);
-            } else {
-                throw new InvalidArgumentException(
-                    "Could not resolve 'columns' parameter. Columns should be array of array."
-                );
+            $resolvedColumns = SplFixedArray::fromArray($resolvedColumns);
+            $values = $columns;
+            $columns = $resolvedColumns;
+        }
+
+        $columnCount = $columnCount ?? Helper::countIterable($columns);
+        if($columnCount == 0)
+        {
+            throw new InvalidArgumentException(
+                "Could not create ad hoc table with no columns"
+            );
+        }
+
+        if(is_null($resolvedColumns))
+        {
+            $resolvedColumns = new SplFixedArray($columnCount);
+
+            $index = 0;
+            foreach($columns as $column)
+            {
+                if(!is_scalar($column))
+                {
+                    $class = Helper::getType($column);
+                    throw new InvalidArgumentException(
+                        "Columns must be string. '$class' found"
+                    );
+                }
+
+                $resolvedColumns[$index] = (string) $column;
+                $index++;
             }
         }
 
-        $columnCount = count($columns);
-        foreach ($values as $item) {
-            if (is_countable($item)) {
-                $count = count($item);
-            } elseif (is_object($item) && method_exists($item, 'count')) {
-                $count = $item->count();
-            } else {
-                $class = Helper::getType($item);
-                throw new InvalidArgumentException(
-                    "Array values '$class' must countable."
-                );
+        $rowsCount = Helper::countIterable($values);
+        if($rowsCount == 0)
+        {
+            throw new InvalidArgumentException(
+                "Could not create ad hoc table with no rows"
+            );
+        }
+
+        $resolvedRows = new SplFixedArray($rowsCount);
+        $rowIndex = 0;
+        foreach ($values as $row)
+        {
+            $resolvedRow = new SplFixedArray($columnCount);
+            $columnIndex = 0;
+            foreach($row as $value)
+            {
+                $resolvedRow[$columnIndex] = Helper::resolveLiteral($value, 'value');
+                $columnIndex++;
             }
 
-            if ($count != $columnCount) {
+            if ($columnIndex != $columnCount) {
                 throw new InvalidArgumentException(
                     "Array values count must same with columns count."
                 );
             }
+
+            $resolvedRows[$rowIndex] = $resolvedRow;
+            $rowIndex++;
         }
 
+        $component = new AdHocTableFromClause;
         $component->setAlias($alias);
-        $component->setColumns($columns);
-        $component->setValues(array_values($values));
+        $component->setColumns($resolvedColumns);
+        $component->setValues($resolvedRows);
 
         return $this->addOrReplaceComponent(ComponentType::From, $component);
     }
