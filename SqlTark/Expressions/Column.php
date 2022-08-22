@@ -7,21 +7,21 @@ namespace SqlTark\Expressions;
 class Column extends BaseExpression
 {
     /**
-     * @var string
+     * @var ?string
      */
     protected $name;
 
-    public function getName(): string
+    public function getName(): ?string
     {
         return $this->name;
     }
 
-    public function setName(string $value)
+    public function setName(?string $value)
     {
         $this->name = $value;
     }
 
-    public function __construct(string $name)
+    public function __construct(?string $name)
     {
         $this->name = $name;
     }

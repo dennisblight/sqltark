@@ -4,40 +4,49 @@ declare(strict_types=1);
 
 namespace SqlTark\Component;
 
+use SplFixedArray;
+use SqlTark\Query\Query;
+
 class AdHocTableFromClause extends AbstractFrom
 {
     /**
-     * @var string[] $columns
+     * @var SplFixedArray<string> $columns
      */
     protected $columns;
 
     /**
-     * @var array $values
+     * @var SplFixedArray<SplFixedArray<BaseExpression|Query>> $values
      */
     protected $values;
 
     /**
-     * @return string[]
+     * @return SplFixedArray<string>
      */
-    public function getColumns(): array
+    public function getColumns(): iterable
     {
         return $this->columns;
     }
 
     /**
-     * @param string[] $value
+     * @param SplFixedArray<string> $value
      */
-    public function setColumns(array $value)
+    public function setColumns(iterable $value)
     {
         $this->columns = $value;
     }
 
-    public function getValues(): array
+    /**
+     * @return SplFixedArray<SplFixedArray<BaseExpression|Query>>
+     */
+    public function getValues(): iterable
     {
         return $this->values;
     }
 
-    public function setValues(array $value)
+    /**
+     * @param SplFixedArray<SplFixedArray<BaseExpression|Query>> $values
+     */
+    public function setValues(iterable $value)
     {
         $this->values = $value;
     }

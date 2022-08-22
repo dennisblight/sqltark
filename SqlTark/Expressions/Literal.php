@@ -7,12 +7,12 @@ namespace SqlTark\Expressions;
 class Literal extends BaseExpression
 {
     /**
-     * @var int|float|string|null
+     * @var int|float|string|null|bool|\DateTime
      */
     protected $value;
 
     /**
-     * @return int|float|string|null
+     * @return int|float|string|null|bool|\DateTime
      */
     public function getValue()
     {
@@ -20,7 +20,7 @@ class Literal extends BaseExpression
     }
 
     /**
-     * @param int|float|string|null $value
+     * @param int|float|string|null|bool|\DateTime $value
      */
     public function setValue($value)
     {
@@ -28,7 +28,7 @@ class Literal extends BaseExpression
     }
 
     /**
-     * @param int|float|string|null $value
+     * @param int|float|string|null|bool|\DateTime $value
      */
     public function __construct($value)
     {
