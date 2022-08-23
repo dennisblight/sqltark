@@ -20,33 +20,24 @@ trait GroupByTrait
     /**
      * @return static Self object
      */
-    public function groupBy($columns): QueryInterface
+    public function groupBy(...$columns): QueryInterface
     {
-        $columns = Helper::resolveQuery($columns, $this);
-
-        if(is_iterable($columns))
-        {
-            foreach($columns as $column)
-            {
-                if(is_iterable($column))
-                {
-                    throw new InvalidArgumentException(
-                        "Could not resolve iterable inside iterable for columns."
-                    );
-                }
-
-                $this->groupBy($column);
-            }
-
-            return $this;
+        if (func_num_args() == 1 && is_iterable($columns[0])) {
+            $columns = $columns[0];
         }
 
-        $resolvedColumn = Helper::resolveExpression($columns, 'column');
+        foreach ($columns as $column) {
+            $column = Helper::resolveQuery($column, $this);
+            $column = Helper::resolveExpression($column, 'column');
 
-        $component = new ColumnClause;
-        $component->setColumn($resolvedColumn);
+            $component = new ColumnClause;
+            $component->setColumn($column);
 
-        $this->addComponent(ComponentType::GroupBy, $component);
+            /** @var BaseQuery $this */
+            $this->addComponent(ComponentType::GroupBy, $component);
+        }
+
+        return $this;
     }
 
     /**
