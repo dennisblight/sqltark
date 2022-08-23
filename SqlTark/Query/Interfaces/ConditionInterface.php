@@ -107,97 +107,97 @@ interface ConditionInterface extends QueryInterface
      * Where value like using ```and``` clause
      * @return static Self object
      */
-    public function whereLike($column, $value, bool $caseSensitive, ?string $escapeCharacter): ConditionInterface;
+    public function whereLike($column, string $value, bool $caseSensitive, ?string $escapeCharacter): ConditionInterface;
 
     /**
      * Where value like using ```or``` clause
      * @return static Self object
      */
-    public function orWhereLike($column, $value, bool $caseSensitive, ?string $escapeCharacter): ConditionInterface;
+    public function orWhereLike($column, string $value, bool $caseSensitive, ?string $escapeCharacter): ConditionInterface;
 
     /**
      * Where value like using ```not``` clause
      * @return static Self object
      */
-    public function whereNotLike($column, $value, bool $caseSensitive, ?string $escapeCharacter): ConditionInterface;
+    public function whereNotLike($column, string $value, bool $caseSensitive, ?string $escapeCharacter): ConditionInterface;
 
     /**
      * Where value like using ```or``` and ```not``` clause
      * @return static Self object
      */
-    public function orWhereNotLike($column, $value, bool $caseSensitive, ?string $escapeCharacter): ConditionInterface;
+    public function orWhereNotLike($column, string $value, bool $caseSensitive, ?string $escapeCharacter): ConditionInterface;
 
     /**
      * Where value starts with using ```and``` clause
      * @return static Self object
      */
-    public function whereStarts($column, $value, bool $caseSensitive, ?string $escapeCharacter): ConditionInterface;
+    public function whereStarts($column, string $value, bool $caseSensitive, ?string $escapeCharacter): ConditionInterface;
 
     /**
      * Where value starts with using ```or``` clause
      * @return static Self object
      */
-    public function orWhereStarts($column, $value, bool $caseSensitive, ?string $escapeCharacter): ConditionInterface;
+    public function orWhereStarts($column, string $value, bool $caseSensitive, ?string $escapeCharacter): ConditionInterface;
 
     /**
      * Where value starts with using ```not``` clause
      * @return static Self object
      */
-    public function whereNotStarts($column, $value, bool $caseSensitive, ?string $escapeCharacter): ConditionInterface;
+    public function whereNotStarts($column, string $value, bool $caseSensitive, ?string $escapeCharacter): ConditionInterface;
 
     /**
      * Where value starts with using ```or``` and ```not``` clause
      * @return static Self object
      */
-    public function orWhereNotStarts($column, $value, bool $caseSensitive, ?string $escapeCharacter): ConditionInterface;
+    public function orWhereNotStarts($column, string $value, bool $caseSensitive, ?string $escapeCharacter): ConditionInterface;
 
     /**
      * Where value ends with using ```and``` clause
      * @return static Self object
      */
-    public function whereEnds($column, $value, bool $caseSensitive, ?string $escapeCharacter): ConditionInterface;
+    public function whereEnds($column, string $value, bool $caseSensitive, ?string $escapeCharacter): ConditionInterface;
 
     /**
      * Where value ends with using ```or``` clause
      * @return static Self object
      */
-    public function orWhereEnds($column, $value, bool $caseSensitive, ?string $escapeCharacter): ConditionInterface;
+    public function orWhereEnds($column, string $value, bool $caseSensitive, ?string $escapeCharacter): ConditionInterface;
 
     /**
      * Where value ends with using ```not``` clause
      * @return static Self object
      */
-    public function whereNotEnds($column, $value, bool $caseSensitive, ?string $escapeCharacter): ConditionInterface;
+    public function whereNotEnds($column, string $value, bool $caseSensitive, ?string $escapeCharacter): ConditionInterface;
 
     /**
      * Where value ends with using ```or``` and ```not``` clause
      * @return static Self object
      */
-    public function orWhereNotEnds($column, $value, bool $caseSensitive, ?string $escapeCharacter): ConditionInterface;
+    public function orWhereNotEnds($column, string $value, bool $caseSensitive, ?string $escapeCharacter): ConditionInterface;
 
     /**
      * Where value contains using ```and``` clause
      * @return static Self object
      */
-    public function whereContains($column, $value, bool $caseSensitive, ?string $escapeCharacter): ConditionInterface;
+    public function whereContains($column, string $value, bool $caseSensitive, ?string $escapeCharacter): ConditionInterface;
 
     /**
      * Where value contains using ```or``` clause
      * @return static Self object
      */
-    public function orWhereContains($column, $value, bool $caseSensitive, ?string $escapeCharacter): ConditionInterface;
+    public function orWhereContains($column, string $value, bool $caseSensitive, ?string $escapeCharacter): ConditionInterface;
 
     /**
      * Where value contains using ```not``` clause
      * @return static Self object
      */
-    public function whereNotContains($column, $value, bool $caseSensitive, ?string $escapeCharacter): ConditionInterface;
+    public function whereNotContains($column, string $value, bool $caseSensitive, ?string $escapeCharacter): ConditionInterface;
 
     /**
      * Where value contains using ```or``` and ```not``` clause
      * @return static Self object
      */
-    public function orWhereNotContains($column, $value, bool $caseSensitive, ?string $escapeCharacter): ConditionInterface;
+    public function orWhereNotContains($column, string $value, bool $caseSensitive, ?string $escapeCharacter): ConditionInterface;
 
     /**
      * Where value is between two values using ```and``` clause

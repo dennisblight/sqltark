@@ -94,97 +94,97 @@ interface HavingInterface extends ConditionInterface
      * Having value like using ```and``` clause
      * @return static Self object
      */
-    public function havingLike($column, $value, bool $caseSensitive, ?string $escapeCharacter): ConditionInterface;
+    public function havingLike($column, string $value, bool $caseSensitive, ?string $escapeCharacter): ConditionInterface;
 
     /**
      * Having value like using ```or``` clause
      * @return static Self object
      */
-    public function orHavingLike($column, $value, bool $caseSensitive, ?string $escapeCharacter): ConditionInterface;
+    public function orHavingLike($column, string $value, bool $caseSensitive, ?string $escapeCharacter): ConditionInterface;
 
     /**
      * Having value like using ```not``` clause
      * @return static Self object
      */
-    public function havingNotLike($column, $value, bool $caseSensitive, ?string $escapeCharacter): ConditionInterface;
+    public function havingNotLike($column, string $value, bool $caseSensitive, ?string $escapeCharacter): ConditionInterface;
 
     /**
      * Having value like using ```or``` and ```not``` clause
      * @return static Self object
      */
-    public function orHavingNotLike($column, $value, bool $caseSensitive, ?string $escapeCharacter): ConditionInterface;
+    public function orHavingNotLike($column, string $value, bool $caseSensitive, ?string $escapeCharacter): ConditionInterface;
 
     /**
      * Having value starts with using ```and``` clause
      * @return static Self object
      */
-    public function havingStarts($column, $value, bool $caseSensitive, ?string $escapeCharacter): ConditionInterface;
+    public function havingStarts($column, string $value, bool $caseSensitive, ?string $escapeCharacter): ConditionInterface;
 
     /**
      * Having value starts with using ```or``` clause
      * @return static Self object
      */
-    public function orHavingStarts($column, $value, bool $caseSensitive, ?string $escapeCharacter): ConditionInterface;
+    public function orHavingStarts($column, string $value, bool $caseSensitive, ?string $escapeCharacter): ConditionInterface;
 
     /**
      * Having value starts with using ```not``` clause
      * @return static Self object
      */
-    public function havingNotStarts($column, $value, bool $caseSensitive, ?string $escapeCharacter): ConditionInterface;
+    public function havingNotStarts($column, string $value, bool $caseSensitive, ?string $escapeCharacter): ConditionInterface;
 
     /**
      * Having value starts with using ```or``` and ```not``` clause
      * @return static Self object
      */
-    public function orHavingNotStarts($column, $value, bool $caseSensitive, ?string $escapeCharacter): ConditionInterface;
+    public function orHavingNotStarts($column, string $value, bool $caseSensitive, ?string $escapeCharacter): ConditionInterface;
 
     /**
      * Having value ends with using ```and``` clause
      * @return static Self object
      */
-    public function havingEnds($column, $value, bool $caseSensitive, ?string $escapeCharacter): ConditionInterface;
+    public function havingEnds($column, string $value, bool $caseSensitive, ?string $escapeCharacter): ConditionInterface;
 
     /**
      * Having value ends with using ```or``` clause
      * @return static Self object
      */
-    public function orHavingEnds($column, $value, bool $caseSensitive, ?string $escapeCharacter): ConditionInterface;
+    public function orHavingEnds($column, string $value, bool $caseSensitive, ?string $escapeCharacter): ConditionInterface;
 
     /**
      * Having value ends with using ```not``` clause
      * @return static Self object
      */
-    public function havingNotEnds($column, $value, bool $caseSensitive, ?string $escapeCharacter): ConditionInterface;
+    public function havingNotEnds($column, string $value, bool $caseSensitive, ?string $escapeCharacter): ConditionInterface;
 
     /**
      * Having value ends with using ```or``` and ```not``` clause
      * @return static Self object
      */
-    public function orHavingNotEnds($column, $value, bool $caseSensitive, ?string $escapeCharacter): ConditionInterface;
+    public function orHavingNotEnds($column, string $value, bool $caseSensitive, ?string $escapeCharacter): ConditionInterface;
 
     /**
      * Having value contains using ```and``` clause
      * @return static Self object
      */
-    public function havingContains($column, $value, bool $caseSensitive, ?string $escapeCharacter): ConditionInterface;
+    public function havingContains($column, string $value, bool $caseSensitive, ?string $escapeCharacter): ConditionInterface;
 
     /**
      * Having value contains using ```or``` clause
      * @return static Self object
      */
-    public function orHavingContains($column, $value, bool $caseSensitive, ?string $escapeCharacter): ConditionInterface;
+    public function orHavingContains($column, string $value, bool $caseSensitive, ?string $escapeCharacter): ConditionInterface;
 
     /**
      * Having value contains using ```not``` clause
      * @return static Self object
      */
-    public function havingNotContains($column, $value, bool $caseSensitive, ?string $escapeCharacter): ConditionInterface;
+    public function havingNotContains($column, string $value, bool $caseSensitive, ?string $escapeCharacter): ConditionInterface;
 
     /**
      * Having value contains using ```or``` and ```not``` clause
      * @return static Self object
      */
-    public function orHavingNotContains($column, $value, bool $caseSensitive, ?string $escapeCharacter): ConditionInterface;
+    public function orHavingNotContains($column, string $value, bool $caseSensitive, ?string $escapeCharacter): ConditionInterface;
 
     /**
      * Having value is between two values using ```and``` clause

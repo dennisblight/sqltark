@@ -27,12 +27,12 @@ class Join extends BaseQuery implements ConditionInterface
      */
     protected $type = JoinType::Join;
 
-    public function getType()
+    public function getType(): int
     {
         return $this->type;
     }
 
-    public function getTypeName()
+    public function getTypeName(): ?string
     {
         return JoinType::nameOf($this->type);
     }
