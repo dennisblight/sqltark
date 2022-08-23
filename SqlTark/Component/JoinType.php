@@ -43,6 +43,32 @@ final class JoinType
         }
     }
 
+    public static function syntaxOf(int $type): ?string
+    {
+        switch ($type) {
+            case self::Join:
+                return 'JOIN';
+            case self::InnerJoin:
+                return 'INNER JOIN';
+            case self::LeftJoin:
+                return 'LEFT JOIN';
+            case self::RightJoin:
+                return 'RIGHT JOIN';
+            case self::OuterJoin:
+                return 'OUTER JOIN';
+            case self::NaturalJoin:
+                return 'NATURAL JOIN';
+            case self::CrossJoin:
+                return 'CROSS JOIN';
+            case self::LeftOuterJoin:
+                return 'LEFT OUTER JOIN';
+            case self::RightOuterJoin:
+                return 'RIGHT OUTER JOIN';
+            case self::FullOuterJoin:
+                return 'FULL OUTER JOIN';
+        }
+    }
+
     private function __construct()
     {
     }
