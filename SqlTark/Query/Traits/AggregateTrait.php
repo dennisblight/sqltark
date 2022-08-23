@@ -14,7 +14,7 @@ trait AggregateTrait
 {
     /**
      * @param string $type Aggregate type
-     * @return static Self object
+     * @return $this Self object
      */
     public function asAggregate(string $type, $column = null): QueryInterface
     {
@@ -31,7 +31,7 @@ trait AggregateTrait
     }
 
     /**
-     * @return static
+     * @return $this Self object
      */
     public function asCount($column = null): QueryInterface
     {
@@ -39,7 +39,7 @@ trait AggregateTrait
     }
 
     /**
-     * @return static
+     * @return $this Self object
      */
     public function asAvg($column = null): QueryInterface
     {
@@ -47,7 +47,7 @@ trait AggregateTrait
     }
 
     /**
-     * @return static
+     * @return $this Self object
      */
     public function asAverage($column = null): QueryInterface
     {
@@ -55,7 +55,7 @@ trait AggregateTrait
     }
 
     /**
-     * @return static
+     * @return $this Self object
      */
     public function asSum($column = null): QueryInterface
     {
@@ -63,7 +63,7 @@ trait AggregateTrait
     }
 
     /**
-     * @return static
+     * @return $this Self object
      */
     public function asMax($column = null): QueryInterface
     {
@@ -71,7 +71,7 @@ trait AggregateTrait
     }
 
     /**
-     * @return static
+     * @return $this Self object
      */
     public function asMin($column = null): QueryInterface
     {

@@ -41,7 +41,7 @@ trait FromTrait
     }
 
     /**
-     * @return static
+     * @return $this Self object
      */
     public function alias(?string $alias): QueryInterface
     {
@@ -74,7 +74,7 @@ trait FromTrait
     }
 
     /**
-     * @return static Self object
+     * @return $this Self object
      */
     public function fromAdHoc(string $alias, iterable $columns, ?iterable $values = null): QueryInterface
     {
@@ -166,7 +166,7 @@ trait FromTrait
     }
 
     /**
-     * @return static Self object
+     * @return $this Self object
      */
     public function fromRaw(string $expression, ...$bindings): QueryInterface
     {

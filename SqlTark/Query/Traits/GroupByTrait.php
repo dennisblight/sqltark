@@ -18,7 +18,7 @@ use SqlTark\Query\Query;
 trait GroupByTrait
 {
     /**
-     * @return static Self object
+     * @return $this Self object
      */
     public function groupBy(...$columns): QueryInterface
     {
@@ -41,7 +41,7 @@ trait GroupByTrait
     }
 
     /**
-     * @return static Self object
+     * @return $this Self object
      */
     public function groupByRaw(string $expression, ...$bindings): QueryInterface
     {

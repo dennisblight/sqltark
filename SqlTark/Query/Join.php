@@ -47,7 +47,7 @@ class Join extends BaseQuery implements ConditionInterface
     }
 
     /**
-     * @return static Self object
+     * @return $this Self object
      */
     public function joinWith($table, ?string $alias = null): QueryInterface
     {
@@ -55,7 +55,7 @@ class Join extends BaseQuery implements ConditionInterface
     }
 
     /**
-     * @return static Self object
+     * @return $this Self object
      */
     public function asType(int $type): QueryInterface
     {
@@ -64,7 +64,7 @@ class Join extends BaseQuery implements ConditionInterface
     }
 
     /**
-     * @return static Self object
+     * @return $this Self object
      */
     public function asInnerJoin(): QueryInterface
     {
@@ -72,7 +72,7 @@ class Join extends BaseQuery implements ConditionInterface
     }
 
     /**
-     * @return static Self object
+     * @return $this Self object
      */
     public function asLeftJoin(): QueryInterface
     {
@@ -80,7 +80,7 @@ class Join extends BaseQuery implements ConditionInterface
     }
 
     /**
-     * @return static Self object
+     * @return $this Self object
      */
     public function asRightJoin(): QueryInterface
     {
@@ -88,7 +88,7 @@ class Join extends BaseQuery implements ConditionInterface
     }
 
     /**
-     * @return static Self object
+     * @return $this Self object
      */
     public function asOuterJoin(): QueryInterface
     {
@@ -96,7 +96,7 @@ class Join extends BaseQuery implements ConditionInterface
     }
 
     /**
-     * @return static Self object
+     * @return $this Self object
      */
     public function asNaturalJoin(): QueryInterface
     {
@@ -104,7 +104,7 @@ class Join extends BaseQuery implements ConditionInterface
     }
 
     /**
-     * @return static Self object
+     * @return $this Self object
      */
     public function asLeftOuterJoin(): QueryInterface
     {
@@ -112,7 +112,7 @@ class Join extends BaseQuery implements ConditionInterface
     }
 
     /**
-     * @return static Self object
+     * @return $this Self object
      */
     public function asRightOuterJoin(): QueryInterface
     {
@@ -120,7 +120,7 @@ class Join extends BaseQuery implements ConditionInterface
     }
 
     /**
-     * @return static Self object
+     * @return $this Self object
      */
     public function asFullOuterJoin(): QueryInterface
     {
@@ -128,7 +128,7 @@ class Join extends BaseQuery implements ConditionInterface
     }
 
     /**
-     * @return static Self object
+     * @return $this Self object
      */
     public function clone(): QueryInterface
     {

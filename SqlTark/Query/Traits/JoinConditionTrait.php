@@ -16,7 +16,7 @@ trait JoinConditionTrait
 
     /**
      * On compare two value using ```and``` clause
-     * @return static Self object
+     * @return $this Self object
      */
     public function on($left, $operator = null, $right = null): ConditionInterface
     {
@@ -64,7 +64,7 @@ trait JoinConditionTrait
 
     /**
      * On compare two value using ```or``` clause
-     * @return static Self object
+     * @return $this Self object
      */
     public function orOn($left, $operator = null, $right = null): ConditionInterface
     {
@@ -73,7 +73,7 @@ trait JoinConditionTrait
 
     /**
      * On compare two value using ```not``` clause
-     * @return static Self object
+     * @return $this Self object
      */
     public function onNot($left, $operator = null, $right = null): ConditionInterface
     {
@@ -82,7 +82,7 @@ trait JoinConditionTrait
 
     /**
      * On compare two value ```or``` and ```not``` clause
-     * @return static Self object
+     * @return $this Self object
      */
     public function orOnNot($left, $operator = null, $right = null): ConditionInterface
     {

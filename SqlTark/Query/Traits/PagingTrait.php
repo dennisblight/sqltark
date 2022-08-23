@@ -13,7 +13,7 @@ use SqlTark\Query\Interfaces\QueryInterface;
 trait PagingTrait
 {
     /**
-     * @return static Self object
+     * @return $this Self object
      */
     public function limit(int $limit): QueryInterface
     {
@@ -25,7 +25,7 @@ trait PagingTrait
     }
 
     /**
-     * @return static Self object
+     * @return $this Self object
      */
     public function offset(int $offset): QueryInterface
     {
@@ -37,7 +37,7 @@ trait PagingTrait
     }
 
     /**
-     * @return static Self object
+     * @return $this Self object
      */
     public function take(int $take): QueryInterface
     {
@@ -45,7 +45,7 @@ trait PagingTrait
     }
 
     /**
-     * @return static Self object
+     * @return $this Self object
      */
     public function skip(int $skip): QueryInterface
     {
@@ -53,7 +53,7 @@ trait PagingTrait
     }
 
     /**
-     * @return static Self object
+     * @return $this Self object
      */
     public function forPage(int $page, int $perPage = 20): QueryInterface
     {

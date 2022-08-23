@@ -17,7 +17,7 @@ abstract class BaseExpression
     }
 
     /**
-     * @return static Self object
+     * @return $this Self object
      */
     public function wrap(?string $value): BaseExpression
     {

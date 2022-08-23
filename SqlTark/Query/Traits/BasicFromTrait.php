@@ -28,7 +28,7 @@ trait FromTrait
     }
 
     /**
-     * @return static
+     * @return $this Self object
      */
     public function alias(?string $alias): QueryInterface
     {

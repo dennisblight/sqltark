@@ -41,7 +41,7 @@ interface QueryInterface
      * @param int $componentType Component type from ```ComponentType``` enum class
      * @param AbstractComponent $component Component object
      * @param int $engineCode Engine type from ```EngineType``` enum class
-     * @return static Self object
+     * @return $this Self object
      */
     public function addComponent(int $componentType, AbstractComponent $component, int $engineCode = 0): QueryInterface;
 
@@ -52,7 +52,7 @@ interface QueryInterface
      * @param int $componentType Component type from ```ComponentType``` enum class
      * @param AbstractComponent $component Component object
      * @param int $engineCode Engine type from ```EngineType``` enum class
-     * @return static Self object
+     * @return $this Self object
      */
     public function addOrReplaceComponent(int $componentType, AbstractComponent $component, int $engineCode = 0): QueryInterface;
 
@@ -90,7 +90,7 @@ interface QueryInterface
 
     /**
      * @param int $engine Engine type from ```EngineType``` enum class
-     * @return static Self object
+     * @return $this Self object
      */
     public function for(int $engine, callable $callback): QueryInterface;
 
@@ -100,7 +100,7 @@ interface QueryInterface
      * @param bool $condition Condition
      * @param callable|null $whenTrue Query when true
      * @param callable|null $whenFalse Query when false
-     * @return static Self object
+     * @return $this Self object
      */
     public function when(bool $condition, ?callable $whenTrue, ?callable $whenFalse): QueryInterface;
 }

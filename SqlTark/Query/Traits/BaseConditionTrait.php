@@ -42,7 +42,7 @@ trait BaseConditionTrait
     protected $havingFlag = false;
 
     /**
-     * @return static Self object
+     * @return $this Self object
      */
     protected function and(): ConditionInterface
     {
@@ -51,7 +51,7 @@ trait BaseConditionTrait
     }
 
     /**
-     * @return static Self object
+     * @return $this Self object
      */
     public function or(): ConditionInterface
     {
@@ -60,7 +60,7 @@ trait BaseConditionTrait
     }
 
     /**
-     * @return static Self object
+     * @return $this Self object
      */
     public function not(bool $value = true): ConditionInterface
     {

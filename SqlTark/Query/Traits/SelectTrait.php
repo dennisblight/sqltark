@@ -27,7 +27,7 @@ trait SelectTrait
     }
 
     /**
-     * @return static
+     * @return $this Self object
      */
     public function distinct($value = true): QueryInterface
     {
@@ -36,7 +36,7 @@ trait SelectTrait
     }
 
     /**
-     * @return static
+     * @return $this Self object
      */
     public function select(...$columns): QueryInterface
     {
@@ -58,7 +58,7 @@ trait SelectTrait
     }
 
     /**
-     * @return static
+     * @return $this Self object
      */
     public function selectRaw(string $expression, ...$bindings): QueryInterface
     {

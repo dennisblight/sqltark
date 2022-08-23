@@ -17,7 +17,7 @@ use SqlTark\Query\Interfaces\QueryInterface;
 trait OrderTrait
 {
     /**
-     * @return static Self object
+     * @return $this Self object
      */
     public function orderBy(...$columns): QueryInterface
     {
@@ -41,7 +41,7 @@ trait OrderTrait
     }
 
     /**
-     * @return static Self object
+     * @return $this Self object
      */
     public function orderByDesc(...$columns): QueryInterface
     {
@@ -65,7 +65,7 @@ trait OrderTrait
     }
 
     /**
-     * @return static Self object
+     * @return $this Self object
      */
     public function orderByRandom(): QueryInterface
     {

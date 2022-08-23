@@ -28,6 +28,7 @@ use SqlTark\Component\OffsetClause;
 use SqlTark\Component\OrderClause;
 use SqlTark\Component\RandomOrder;
 use SqlTark\Component\RawColumn;
+use SqlTark\Component\RawCondition;
 use SqlTark\Component\RawFromClause;
 use SqlTark\Component\RawOrder;
 use SqlTark\Expressions\BaseExpression;
@@ -361,7 +362,15 @@ abstract class BaseCompiler
                 $resolvedCondition .= "($resolvedValues)";
             } elseif ($condition instanceof GroupCondition) {
                 $clauses = $condition->getCondition()->getComponents($type);
-                $resolvedCondition = "(" . $this->compileConditions($clauses) . ")";
+                $resolvedCondition = $this->compileConditions($clauses);
+                if(count($clauses) > 1 || (count($clauses) == 1 && $clauses[0] instanceof RawCondition)) {
+                    $resolvedCondition = "($resolvedCondition)";
+                }
+            } elseif ($condition instanceof RawCondition) {
+                $resolvedCondition = $this->compileRaw(
+                    $condition->getExpression(),
+                    $condition->getBindings()
+                );
             }
 
             if ($resolvedCondition) {

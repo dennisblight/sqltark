@@ -180,7 +180,7 @@ trait ConditionTrait
     {
         return $this->or()->not()->whereBetween($column, $lower, $higher);
     }
-
+    
     public function whereGroup($group): ConditionInterface
     {
         return call_user_func_array([$this->withWhere(), 'conditionGroup'], func_get_args());

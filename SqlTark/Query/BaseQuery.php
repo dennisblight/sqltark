@@ -217,7 +217,7 @@ abstract class BaseQuery implements QueryInterface
     }
 
     /**
-     * @return static
+     * @return static Clone of current object
      */
     public function clone(): QueryInterface
     {
