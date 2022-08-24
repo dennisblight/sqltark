@@ -29,6 +29,9 @@ class JoinClause extends AbstractJoin
         $this->join = $value;
     }
 
+    /**
+     * @return static Clone of current object
+     */
     public function clone()
     {
         $self = parent::clone();

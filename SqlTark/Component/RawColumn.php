@@ -46,11 +46,10 @@ class RawColumn extends AbstractColumn
     }
 
     /**
-     * @return RawColumn
+     * @return static Clone of current object
      */
-    public function clone(): AbstractComponent
+    public function clone()
     {
-        /** @var RawColumn */
         $self = parent::clone();
 
         $self->expression = $this->expression;

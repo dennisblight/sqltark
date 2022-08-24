@@ -12,7 +12,6 @@ use SqlTark\Query\Traits\ConditionTrait;
 use SqlTark\Query\Traits\FromTrait;
 use SqlTark\Query\Interfaces\ConditionInterface;
 use SqlTark\Query\Interfaces\HavingInterface;
-use SqlTark\Query\Interfaces\QueryInterface;
 use SqlTark\Query\Traits\AggregateTrait;
 use SqlTark\Query\Traits\GroupByTrait;
 use SqlTark\Query\Traits\HavingTrait;
@@ -37,7 +36,10 @@ class Query extends BaseQuery implements ConditionInterface, HavingInterface
         }
     }
 
-    public function clone(): QueryInterface
+    /**
+     * @return static Clone of current object
+     */
+    public function clone()
     {
         $self = parent::clone();
 
@@ -48,5 +50,31 @@ class Query extends BaseQuery implements ConditionInterface, HavingInterface
         $self->havingFlag = $this->havingFlag;
 
         return $self;
+    }
+
+    public function insert(iterable $columns, ?iterable $values = null): InsertQuery
+    {
+        $result = InsertQuery::fromQuery($this);
+        return call_user_func_array([$result, 'withValues'], func_get_args());
+    }
+
+    public function insertQuery(Query $query, ?iterable $columns = null): InsertQuery
+    {
+        $result = InsertQuery::fromQuery($this);
+        return call_user_func_array([$result, 'withQuery'], func_get_args());
+    }
+
+    /**
+     * @param iterable|object $value
+     */
+    public function update($value): UpdateQuery
+    {
+        $result = UpdateQuery::fromQuery($this);
+        return call_user_func_array([$result, 'withValue'], func_get_args());
+    }
+
+    public function delete(): DeleteQuery
+    {
+        return DeleteQuery::fromQuery($this);
     }
 }

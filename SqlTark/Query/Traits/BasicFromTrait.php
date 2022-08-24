@@ -10,7 +10,7 @@ use SqlTark\Component\ComponentType;
 use SqlTark\Helper;
 use SqlTark\Query\Interfaces\QueryInterface;
 
-trait FromTrait
+trait BasicFromTrait
 {
     /**
      * @var ?string $alias
@@ -30,13 +30,16 @@ trait FromTrait
     /**
      * @return $this Self object
      */
-    public function alias(?string $alias): QueryInterface
+    public function alias(?string $alias)
     {
         $this->alias = $alias;
         return $this;
     }
 
-    public function from($table, ?string $alias = null): QueryInterface
+    /**
+     * @return $this Self object
+     */
+    public function from($table, ?string $alias = null)
     {
         $component = null;
         if (is_string($table)) {

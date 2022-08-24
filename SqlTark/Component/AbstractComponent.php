@@ -29,7 +29,10 @@ abstract class AbstractComponent
         return ComponentType::nameOf($this->componentType);
     }
 
-    public function setComponentType(int $value): AbstractComponent
+    /**
+     * @return static Clone of current object
+     */
+    public function setComponentType(int $value)
     {
         $this->componentType = $value;
         return $this;
@@ -45,15 +48,15 @@ abstract class AbstractComponent
         return EngineType::nameOf($this->engine);
     }
 
-    public function setEngine(int $value): AbstractComponent
+    /**
+     * @return static Clone of current object
+     */
+    public function setEngine(int $value)
     {
         $this->engine = $value;
         return $this;
     }
 
-    /**
-     * @return static Clone of current object
-     */
     public function __clone()
     {
         return $this->clone();

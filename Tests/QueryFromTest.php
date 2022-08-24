@@ -5,7 +5,6 @@ use PHPUnit\Framework\TestCase;
 use SqlTark\Component\AdHocTableFromClause;
 use SqlTark\Component\ComponentType;
 use SqlTark\Component\FromClause;
-use SqlTark\Component\QueryFromClause;
 use SqlTark\Query\Query;
 
 class QueryFromTest extends TestCase
@@ -64,9 +63,11 @@ class QueryFromTest extends TestCase
     public function testFromAdHoc()
     {
         $q = new Query;
-        $q->fromAdHoc('t2', [
-            ['c1' => 'one', 'c1' => 'two', 'c1' => 'three', ]
+        $q->fromAdHoc('t1', [
+            ['c1' => 'one', 'c1' => 'two', 'c1' => 'three']
         ]);
+
+        $q->fromAdHoc('t2', ['c1', 'c2', 'c2'], [[1, 2, 3], [4, 5, 6], [7, 8, 9]]);
 
         /** @var AdHocTableFromClause $component */
         $component = $q->getOneComponent(ComponentType::From);

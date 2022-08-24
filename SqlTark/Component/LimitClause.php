@@ -25,11 +25,10 @@ class LimitClause extends AbstractComponent
     }
 
     /**
-     * @return LimitClause
+     * @return static Clone of current object
      */
     public function clone()
     {
-        /** @var LimitClause */
         $self = parent::clone();
 
         $self->limit = $this->limit;

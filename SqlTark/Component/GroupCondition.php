@@ -24,9 +24,9 @@ class GroupCondition extends AbstractCondition
     }
 
     /**
-     * @return GroupCondition
+     * @return static Clone of current object
      */
-    public function clone(): AbstractComponent
+    public function clone()
     {
         /** @var GroupCondition */
         $self = parent::clone();

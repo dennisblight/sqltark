@@ -29,7 +29,7 @@ trait SelectTrait
     /**
      * @return $this Self object
      */
-    public function distinct($value = true): QueryInterface
+    public function distinct($value = true)
     {
         $this->distinct = $value;
         return $this;
@@ -38,7 +38,7 @@ trait SelectTrait
     /**
      * @return $this Self object
      */
-    public function select(...$columns): QueryInterface
+    public function select(...$columns)
     {
         if (func_num_args() == 1 && is_iterable($columns[0])) {
             $columns = $columns[0];
@@ -60,7 +60,7 @@ trait SelectTrait
     /**
      * @return $this Self object
      */
-    public function selectRaw(string $expression, ...$bindings): QueryInterface
+    public function selectRaw(string $expression, ...$bindings)
     {
         $resolvedBindings = new SplFixedArray(count($bindings));
         foreach ($bindings as $index => $item) {

@@ -15,7 +15,7 @@ trait PagingTrait
     /**
      * @return $this Self object
      */
-    public function limit(int $limit): QueryInterface
+    public function limit(int $limit)
     {
         $component = new LimitClause;
         $component->setLimit($limit);
@@ -27,7 +27,7 @@ trait PagingTrait
     /**
      * @return $this Self object
      */
-    public function offset(int $offset): QueryInterface
+    public function offset(int $offset)
     {
         $component = new OffsetClause;
         $component->setOffset($offset);
@@ -39,7 +39,7 @@ trait PagingTrait
     /**
      * @return $this Self object
      */
-    public function take(int $take): QueryInterface
+    public function take(int $take)
     {
         return $this->limit($take);
     }
@@ -47,7 +47,7 @@ trait PagingTrait
     /**
      * @return $this Self object
      */
-    public function skip(int $skip): QueryInterface
+    public function skip(int $skip)
     {
         return $this->offset($skip);
     }
@@ -55,7 +55,7 @@ trait PagingTrait
     /**
      * @return $this Self object
      */
-    public function forPage(int $page, int $perPage = 20): QueryInterface
+    public function forPage(int $page, int $perPage = 20)
     {
         return $this->skip(($page - 1) * $perPage)->take($perPage);
     }

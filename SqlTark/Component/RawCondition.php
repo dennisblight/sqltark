@@ -46,11 +46,10 @@ class RawCondition extends AbstractCondition
     }
 
     /**
-     * @return RawCondition
+     * @return static Clone of current object
      */
-    public function clone(): AbstractComponent
+    public function clone()
     {
-        /** @var RawCondition */
         $self = parent::clone();
 
         $self->expression = $this->expression;

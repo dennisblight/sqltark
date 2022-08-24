@@ -22,9 +22,9 @@ abstract class AbstractFrom extends AbstractComponent
     }
 
     /**
-     * @return AbstractFrom
+     * @return static Clone of current object
      */
-    public function clone(): AbstractComponent
+    public function clone()
     {
         /** @var AbstractFrom */
         $self = parent::clone();

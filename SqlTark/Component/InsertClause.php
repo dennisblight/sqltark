@@ -7,7 +7,7 @@ namespace SqlTark\Component;
 use SplFixedArray;
 use SqlTark\Query\Query;
 
-class AdHocTableFromClause extends AbstractFrom
+class InsertClause extends AbstractFrom
 {
     /**
      * @var SplFixedArray<string> $columns
@@ -51,11 +51,9 @@ class AdHocTableFromClause extends AbstractFrom
         $this->values = $value;
     }
 
-    /**
-     * @return static Clone of current object
-     */
     public function clone()
     {
+        /** @var InsertClause */
         $self = parent::clone();
 
         $self->columns = $this->columns;

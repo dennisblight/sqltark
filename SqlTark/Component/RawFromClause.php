@@ -46,11 +46,10 @@ class RawFromClause extends AbstractFrom
     }
 
     /**
-     * @return RawFromClause
+     * @return static Clone of current object
      */
-    public function clone(): AbstractComponent
+    public function clone()
     {
-        /** @var RawFromClause */
         $self = parent::clone();
 
         $self->expression = $this->expression;

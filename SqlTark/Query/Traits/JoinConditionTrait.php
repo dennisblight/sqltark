@@ -18,7 +18,7 @@ trait JoinConditionTrait
      * On compare two value using ```and``` clause
      * @return $this Self object
      */
-    public function on($left, $operator = null, $right = null): ConditionInterface
+    public function on($left, $operator = null, $right = null)
     {
         if (func_num_args() == 1) {
             if (is_iterable($left)) {
@@ -66,7 +66,7 @@ trait JoinConditionTrait
      * On compare two value using ```or``` clause
      * @return $this Self object
      */
-    public function orOn($left, $operator = null, $right = null): ConditionInterface
+    public function orOn($left, $operator = null, $right = null)
     {
         return call_user_func_array([$this->or(), 'on'], func_get_args());
     }
@@ -75,7 +75,7 @@ trait JoinConditionTrait
      * On compare two value using ```not``` clause
      * @return $this Self object
      */
-    public function onNot($left, $operator = null, $right = null): ConditionInterface
+    public function onNot($left, $operator = null, $right = null)
     {
         return call_user_func_array([$this->not(), 'on'], func_get_args());
     }
@@ -84,7 +84,7 @@ trait JoinConditionTrait
      * On compare two value ```or``` and ```not``` clause
      * @return $this Self object
      */
-    public function orOnNot($left, $operator = null, $right = null): ConditionInterface
+    public function orOnNot($left, $operator = null, $right = null)
     {
         return call_user_func_array([$this->or()->not(), 'on'], func_get_args());
     }

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace SqlTark\Compiler;
 
+use InvalidArgumentException;
 use SplFixedArray;
 use SqlTark\Component\AbstractColumn;
 use SqlTark\Component\AbstractCondition;
@@ -18,6 +19,7 @@ use SqlTark\Component\ExistsCondition;
 use SqlTark\Component\FromClause;
 use SqlTark\Component\GroupCondition;
 use SqlTark\Component\InCondition;
+use SqlTark\Component\InsertClause;
 use SqlTark\Component\JoinClause;
 use SqlTark\Component\JoinType;
 use SqlTark\Component\LikeCondition;
@@ -31,12 +33,16 @@ use SqlTark\Component\RawColumn;
 use SqlTark\Component\RawCondition;
 use SqlTark\Component\RawFromClause;
 use SqlTark\Component\RawOrder;
+use SqlTark\Component\UpdateClause;
 use SqlTark\Expressions\BaseExpression;
 use SqlTark\Expressions\Column;
 use SqlTark\Expressions\Literal;
 use SqlTark\Expressions\Variable;
 use SqlTark\Helper;
+use SqlTark\Query\DeleteQuery;
+use SqlTark\Query\InsertQuery;
 use SqlTark\Query\Query;
+use SqlTark\Query\UpdateQuery;
 
 abstract class BaseCompiler
 {
@@ -54,7 +60,7 @@ abstract class BaseCompiler
     /**
      * @param AbstractColumn[] $columns
      */
-    public function compileColumns(iterable $columns, $withAlias = true)
+    public function compileColumns(iterable $columns, $withAlias = true): ?string
     {
         $expressionResolver = function ($expression) use ($withAlias) {
 
@@ -101,7 +107,7 @@ abstract class BaseCompiler
     /**
      * @param AbstractColumn[] $columns
      */
-    public function compileSelect(iterable $columns, bool $isDisctinct = false)
+    public function compileSelect(iterable $columns, bool $isDisctinct = false): ?string
     {
         $result = $this->compileColumns($columns);
         if (empty($result)) {
@@ -115,7 +121,7 @@ abstract class BaseCompiler
         return "SELECT $result";
     }
 
-    public function compileFrom(?AbstractFrom $table)
+    public function compileFrom(?AbstractFrom $table): ?string
     {
         $result = null;
         if ($table instanceof FromClause) {
@@ -181,7 +187,7 @@ abstract class BaseCompiler
     /**
      * @param AbstractJoin[] $joins
      */
-    public function compileJoin(iterable $joins)
+    public function compileJoin(iterable $joins): ?string
     {
         $result = null;
         foreach ($joins as $index => $component) {
@@ -215,7 +221,7 @@ abstract class BaseCompiler
     /**
      * @param AbstractCondition[] $conditions
      */
-    public function compileWhere(iterable $conditions)
+    public function compileWhere(iterable $conditions): ?string
     {
         $resolvedCondition = $this->compileConditions($conditions);
         if (!empty($resolvedCondition)) {
@@ -225,25 +231,28 @@ abstract class BaseCompiler
         return null;
     }
 
-    public function compilePaging(?LimitClause $limitClause, ?OffsetClause $offsetClause)
+    public function compilePaging(?LimitClause $limitClause, ?OffsetClause $offsetClause): ?string
     {
+        $resolvedPaging = null;
         if ($limitClause && $limitClause->hasLimit()) {
             $limit = $limitClause->getLimit();
-            if ($limitClause->hasLimit() && $offsetClause->hasOffset()) {
+            if ($offsetClause && $offsetClause->hasOffset()) {
                 $offset = $offsetClause->getOffset();
-                return "LIMIT $offset, $limit";
+                $resolvedPaging = "LIMIT $offset, $limit";
             }
-            return "LIMIT $limit";
+            else $resolvedPaging = "LIMIT $limit";
         } elseif ($offsetClause && $offsetClause->hasOffset()) {
             $offset = $offsetClause->getOffset();
-            return "LIMIT " . static::MaxValue . " OFFSET $offset";
+            $resolvedPaging = "LIMIT " . static::MaxValue . " OFFSET $offset";
         }
+
+        return $resolvedPaging;
     }
 
     /**
      * @param AbstractCondition[] $conditions
      */
-    public function compileHaving(iterable $conditions)
+    public function compileHaving(iterable $conditions): ?string
     {
         $resolvedCondition = $this->compileConditions($conditions, ComponentType::Having);
         if (!empty($resolvedCondition)) {
@@ -256,7 +265,7 @@ abstract class BaseCompiler
     /**
      * @param AbstractCondition[] $conditions
      */
-    public function compileConditions(iterable $conditions, $type = ComponentType::Where)
+    public function compileConditions(iterable $conditions, $type = ComponentType::Where): ?string
     {
         $expressionResolver = function ($expression, $wrapQuery = true) {
 
@@ -382,9 +391,240 @@ abstract class BaseCompiler
         return $result;
     }
 
-    // public fucntion 
+    public function compileInsertQuery(InsertQuery $query): ?string
+    {
+        $from = $query->getOneComponent(ComponentType::From);
+        if(empty($from)) {
+            throw new InvalidArgumentException(
+                "Insert query does not have table reference"
+            );
+        }
 
-    public function compileQuery(Query $query)
+        $values = $query->getOneComponent(ComponentType::Insert);
+        if(empty($values)) {
+            throw new InvalidArgumentException(
+                "Insert query does not have value"
+            );
+        }
+        
+        $resolvedTable = null;
+        if($from instanceof FromClause) {
+            $table = $from->getTable();
+            $resolvedTable = $this->wrapIdentifier($table);
+        }
+        elseif($from instanceof RawFromClause) {
+            $expression = $from->getExpression();
+            $bindings = $from->getBindings();
+            $resolvedTable = $this->compileRaw($expression, $bindings);
+        }
+        else {
+            $class = Helper::getType($from);
+            throw new InvalidArgumentException(
+                "Could not resolve '$class' for insert query"
+            );
+        }
+
+        $result = "INSERT INTO $resolvedTable ";
+        if($values instanceof InsertClause) {
+            $result .= '(';
+            foreach($values->getColumns() as $index => $column) {
+                if($index > 0) {
+                    $result .= ', ';
+                }
+
+                $result .= $this->wrapIdentifier($column);
+            }
+            $result .= ') VALUES ';
+
+            $first = true;
+            foreach ($values->getValues() as $row) {
+                if (!$first) {
+                    $result .= ', ';
+                }
+
+                $result .= '(';
+                foreach ($row as $index => $value) {
+                    $resolvedValue = null;
+                    if ($value instanceof BaseExpression) {
+                        $resolvedValue = $this->compileExpression($value, false);
+                    } elseif ($value instanceof Query) {
+                        $resolvedValue = '(' . $this->compileQuery($value) . ')';
+                    }
+
+                    if ($index > 0) {
+                        $result .= ', ';
+                    }
+
+                    $result .= $resolvedValue;
+                }
+                $result .= ')';
+
+                $first = false;
+            }
+        }
+
+        return $result;
+    }
+
+    public function compileUpdateQuery(UpdateQuery $query): ?string
+    {
+        $from = null;
+        $joins = [];
+        $where = [];
+        $orderBy = [];
+        $limit = null;
+        $offset = null;
+        $update = null;
+
+        foreach ($query->getComponents() as $component) {
+            switch ($component->getComponentType()) {
+                case ComponentType::From:
+                    $from = $component;
+                    break;
+                case ComponentType::Join:
+                    $joins[] = $component;
+                    break;
+                case ComponentType::Where:
+                    $where[] = $component;
+                    break;
+                case ComponentType::GroupBy:
+                    $groupBy[] = $component;
+                    break;
+                case ComponentType::Having:
+                    $havings[] = $component;
+                    break;
+                case ComponentType::OrderBy:
+                    $orderBy[] = $component;
+                    break;
+                case ComponentType::Limit:
+                    $limit = $component;
+                    break;
+                case ComponentType::Offset:
+                    $offset = $component;
+                    break;
+                case ComponentType::Update:
+                    $update = $component;
+                    break;
+            }
+        }
+
+        if(empty($from)) {
+            throw new InvalidArgumentException(
+                "Table not specified!"
+            );
+        }
+
+        if(empty($update)) {
+            throw new InvalidArgumentException(
+                "Update value not specified!"
+            );
+        }
+
+        $result = 'UPDATE ' . $this->compileFrom($from);
+
+        $resolvedJoin = $this->compileJoin($joins);
+        if($resolvedJoin) {
+            $result .= ' ' . $resolvedJoin;
+        }
+
+        $expressionResolver = function ($expression) {
+
+            if ($expression instanceof BaseExpression) {
+                return $this->compileExpression($expression, false);
+            } elseif ($expression instanceof Query) {
+                $resolvedValue = $this->compileQuery($expression);
+                $resolvedValue = "($resolvedValue)";
+                return $resolvedValue;
+            }
+        };
+
+        if($update instanceof UpdateClause) {
+            $result .= ' SET ';
+            $first = true;
+            foreach($update->getValue() as $column => $value) {
+                if(!$first) $result .= ', ';
+                $result .= $this->wrapIdentifier($column);
+                $result .= ' = ';
+                $result .= $expressionResolver($value);
+                $first = false;
+            }
+        }
+
+        $resolvedWhere = $this->compileWhere($where);
+        if($resolvedWhere) {
+            $result .= ' ' . $resolvedWhere;
+        }
+
+        $resolvedOrderBy = $this->compileOrderBy($orderBy);
+        if($resolvedOrderBy) {
+            $result .= ' ' . $resolvedOrderBy;
+        }
+
+        $resolvedPaging = $this->compilePaging($limit, $offset);
+        if($resolvedPaging) {
+            $result .= ' ' . $resolvedPaging;
+        }
+
+        return $result;
+    }
+
+    public function compileDeleteQuery(DeleteQuery $query): ?string
+    {
+        $from = null;
+        $joins = [];
+        $where = [];
+        $orderBy = [];
+        $limit = null;
+        $offset = null;
+
+        foreach ($query->getComponents() as $component) {
+            switch ($component->getComponentType()) {
+                case ComponentType::From:
+                    $from = $component;
+                    break;
+                case ComponentType::Where:
+                    $where[] = $component;
+                    break;
+                case ComponentType::OrderBy:
+                    $orderBy[] = $component;
+                    break;
+                case ComponentType::Limit:
+                    $limit = $component;
+                    break;
+                case ComponentType::Offset:
+                    $offset = $component;
+                    break;
+            }
+        }
+
+        if(empty($from)) {
+            throw new InvalidArgumentException(
+                "Table not specified!"
+            );
+        }
+
+        $result = 'DELETE FROM ' . $this->compileFrom($from);
+
+        $resolvedWhere = $this->compileWhere($where);
+        if($resolvedWhere) {
+            $result .= ' ' . $resolvedWhere;
+        }
+
+        $resolvedOrderBy = $this->compileOrderBy($orderBy);
+        if($resolvedOrderBy) {
+            $result .= ' ' . $resolvedOrderBy;
+        }
+
+        $resolvedPaging = $this->compilePaging($limit, $offset);
+        if($resolvedPaging) {
+            $result .= ' ' . $resolvedPaging;
+        }
+
+        return $result;
+
+    }
+
+    public function compileQuery(Query $query): ?string
     {
         $selects = [];
         $from = null;
@@ -467,7 +707,7 @@ abstract class BaseCompiler
     /**
      * @param AbstractColumn[] $columns
      */
-    public function compileGroupBy(iterable $columns)
+    public function compileGroupBy(iterable $columns): ?string
     {
         $result = $this->compileColumns($columns, false);
         if (empty($result)) {
@@ -480,7 +720,7 @@ abstract class BaseCompiler
     /**
      * @param AbstractColumn[] $columns
      */
-    public function compileOrderBy(iterable $columns)
+    public function compileOrderBy(iterable $columns): ?string
     {
         $expressionResolver = function ($expression) {
 
@@ -530,7 +770,7 @@ abstract class BaseCompiler
      * @param string $expression
      * @param SplFixedArray<BaseExpression> $bindings
      */
-    public function compileRaw(string $expression, iterable $bindings = [])
+    public function compileRaw(string $expression, iterable $bindings = []): ?string
     {
         $expression = trim($expression, " \t\n\r\0\x0B,");
         return Helper::replaceAll($expression, static::ParameterPlaceholder, function ($index) use ($bindings) {
@@ -538,7 +778,7 @@ abstract class BaseCompiler
         });
     }
 
-    public function compileExpression(BaseExpression $expression, bool $withAlias = true)
+    public function compileExpression(BaseExpression $expression, bool $withAlias = true): ?string
     {
         if ($expression instanceof Literal) {
             return $this->compileLiteral($expression);
@@ -549,7 +789,7 @@ abstract class BaseCompiler
         }
     }
 
-    public function compileLiteral(Literal $literal)
+    public function compileLiteral(Literal $literal): ?string
     {
         $value = $literal->getValue();
         $result = $this->quote($value);
@@ -557,7 +797,7 @@ abstract class BaseCompiler
         return $this->wrapFunction($result, $literal->getWrap());
     }
 
-    public function compileVariable(Variable $variable)
+    public function compileVariable(Variable $variable): ?string
     {
         $result = trim($variable->getName());
 
@@ -568,7 +808,7 @@ abstract class BaseCompiler
         return $this->wrapFunction($result, $variable->getWrap());
     }
 
-    public function compileColumn(Column $column, bool $withAlias = true)
+    public function compileColumn(Column $column, bool $withAlias = true): ?string
     {
         $result = trim($column->getName());
         if (empty($result) || $result == '*') {
@@ -590,7 +830,7 @@ abstract class BaseCompiler
         return $columnExression;
     }
 
-    public function compileTable(string $name)
+    public function compileTable(string $name): ?string
     {
         $result = trim($name);
         if (empty($result)) {
@@ -612,26 +852,12 @@ abstract class BaseCompiler
         return $result;
     }
 
-    public function quote($value)
-    {
-        if (is_string($value)) {
-            return "'" . str_replace(
-                ['\\', "\r", "\n", "\t", "\x08", "'", "\"", "\x1A", "\x00"],
-                ['\\\\', '\r', '\n', '\t', '\b', "\'", '\"', '\Z', '\0'],
-                $value
-            ) . "'";
-        } elseif (is_bool($value)) {
-            return $value ? 'TRUE' : 'FALSE';
-        } elseif (is_scalar($value)) {
-            return (string) $value;
-        } elseif (is_null($value)) {
-            return 'NULL';
-        } elseif ($value instanceof \DateTime) {
-            return '\'' . $value->format('Y-m-d H:i:s') . '\'';
-        }
-    }
+    /**
+     * @param \DateTime|string $value
+     */
+    public abstract function quote($value): ?string;
 
-    protected function wrapFunction(string $value, ?string $wrapper)
+    protected function wrapFunction(string $value, ?string $wrapper): ?string
     {
         if ($wrapper) {
             return $wrapper . "($value)";
@@ -640,7 +866,7 @@ abstract class BaseCompiler
         return $value;
     }
 
-    protected function wrapIdentifier(string $value)
+    protected function wrapIdentifier(string $value): ?string
     {
         $splitName = [];
         foreach (explode('.', $value) as $item) {

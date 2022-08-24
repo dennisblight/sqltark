@@ -6,12 +6,17 @@ namespace SqlTark\Component;
 
 use SqlTark\Query\Query;
 
-class ExistsCondition extends AbstractCondition
+class InsertQueryClause extends AbstractInsert
 {
     /**
      * @var Query $query
      */
     protected $query;
+
+    /**
+     * @var ?iterable<string> $columns
+     */
+    protected $columns;
 
     public function getQuery(): Query
     {
@@ -23,6 +28,16 @@ class ExistsCondition extends AbstractCondition
         $this->query = $value;
     }
 
+    public function getColumns(): ?iterable
+    {
+        return $this->columns;
+    }
+
+    public function setColumns(?iterable $value)
+    {
+        $this->columns = $value;
+    }
+
     /**
      * @return static Clone of current object
      */
@@ -31,6 +46,7 @@ class ExistsCondition extends AbstractCondition
         $self = parent::clone();
 
         $self->query = clone $this->query;
+        $self->columns = $this->columns;
 
         return $self;
     }

@@ -48,9 +48,9 @@ class OrderClause extends AbstractOrder
     }
 
     /**
-     * @return OrderClause
+     * @return static Clone of current object
      */
-    public function clone(): AbstractComponent
+    public function clone()
     {
         /** @var OrderClause */
         $self = parent::clone();

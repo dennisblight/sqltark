@@ -53,11 +53,10 @@ class InCondition extends AbstractCondition
     }
 
     /**
-     * @return InCondition
+     * @return static Clone of current object
      */
-    public function clone(): AbstractComponent
+    public function clone()
     {
-        /** @var InCondition */
         $self = parent::clone();
 
         $self->column = $this->column instanceof Query

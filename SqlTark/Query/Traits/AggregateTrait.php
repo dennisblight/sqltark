@@ -16,7 +16,7 @@ trait AggregateTrait
      * @param string $type Aggregate type
      * @return $this Self object
      */
-    public function asAggregate(string $type, $column = null): QueryInterface
+    public function asAggregate(string $type, $column = null)
     {
         $column = Helper::resolveQuery($column, $this);
         $column = Helper::resolveExpression($column, 'column');
@@ -33,7 +33,7 @@ trait AggregateTrait
     /**
      * @return $this Self object
      */
-    public function asCount($column = null): QueryInterface
+    public function asCount($column = null)
     {
         return $this->asAggregate('COUNT', $column);
     }
@@ -41,7 +41,7 @@ trait AggregateTrait
     /**
      * @return $this Self object
      */
-    public function asAvg($column = null): QueryInterface
+    public function asAvg($column = null)
     {
         return $this->asAggregate('AVG', $column);
     }
@@ -49,7 +49,7 @@ trait AggregateTrait
     /**
      * @return $this Self object
      */
-    public function asAverage($column = null): QueryInterface
+    public function asAverage($column = null)
     {
         return $this->asAggregate('AVG', $column);
     }
@@ -57,7 +57,7 @@ trait AggregateTrait
     /**
      * @return $this Self object
      */
-    public function asSum($column = null): QueryInterface
+    public function asSum($column = null)
     {
         return $this->asAggregate('SUM', $column);
     }
@@ -65,7 +65,7 @@ trait AggregateTrait
     /**
      * @return $this Self object
      */
-    public function asMax($column = null): QueryInterface
+    public function asMax($column = null)
     {
         return $this->asAggregate('MAX', $column);
     }
@@ -73,7 +73,7 @@ trait AggregateTrait
     /**
      * @return $this Self object
      */
-    public function asMin($column = null): QueryInterface
+    public function asMin($column = null)
     {
         return $this->asAggregate('MIN', $column);
     }

@@ -102,5 +102,5 @@ interface QueryInterface
      * @param callable|null $whenFalse Query when false
      * @return $this Self object
      */
-    public function when(bool $condition, ?callable $whenTrue, ?callable $whenFalse): QueryInterface;
+    public function when(bool $condition, ?callable $whenTrue, ?callable $whenFalse);
 }

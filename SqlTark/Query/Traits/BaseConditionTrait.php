@@ -44,7 +44,7 @@ trait BaseConditionTrait
     /**
      * @return $this Self object
      */
-    protected function and(): ConditionInterface
+    protected function and()
     {
         $this->orFlag = false;
         return $this;
@@ -53,7 +53,7 @@ trait BaseConditionTrait
     /**
      * @return $this Self object
      */
-    public function or(): ConditionInterface
+    public function or()
     {
         $this->orFlag = true;
         return $this;
@@ -62,7 +62,7 @@ trait BaseConditionTrait
     /**
      * @return $this Self object
      */
-    public function not(bool $value = true): ConditionInterface
+    public function not(bool $value = true)
     {
         $this->notFlag = $value;
         return $this;
@@ -107,7 +107,7 @@ trait BaseConditionTrait
         return $return;
     }
 
-    protected function condition($left, $operator = null, $right = null): ConditionInterface
+    protected function condition($left, $operator = null, $right = null)
     {
         if (func_num_args() == 1) {
             if (is_iterable($left)) {
@@ -159,7 +159,7 @@ trait BaseConditionTrait
         return $this->addComponent($componentType, $component);
     }
 
-    protected function conditionIn($column, $values): ConditionInterface
+    protected function conditionIn($column, $values)
     {
         $column = Helper::resolveQuery($column, $this);
         $values = Helper::resolveQuery($values, $this);
@@ -214,7 +214,7 @@ trait BaseConditionTrait
         return $this->addComponent($componentType, $component);
     }
 
-    protected function conditionNull($column): ConditionInterface
+    protected function conditionNull($column)
     {
         $column = Helper::resolveQuery($column, $this);
         $column = Helper::resolveExpression($column, 'column');
@@ -230,7 +230,7 @@ trait BaseConditionTrait
         return $this->addComponent($componentType, $component);
     }
 
-    protected function conditionLike($column, string $value, bool $caseSensitive, ?string $escapeCharacter, $type = LikeType::Like): ConditionInterface
+    protected function conditionLike($column, string $value, bool $caseSensitive, ?string $escapeCharacter, $type = LikeType::Like)
     {
         $column = Helper::resolveQuery($column, $this);
         $column = Helper::resolveExpression($column, 'column');
@@ -250,7 +250,7 @@ trait BaseConditionTrait
         return $this->addComponent($componentType, $component);
     }
 
-    protected function conditionBetween($column, $lower, $higher): ConditionInterface
+    protected function conditionBetween($column, $lower, $higher)
     {
         $column = Helper::resolveQuery($column, $this);
         $lower = Helper::resolveQuery($lower, $this);
@@ -272,7 +272,7 @@ trait BaseConditionTrait
         return $this->addComponent($componentType, $component);
     }
 
-    protected function conditionGroup($group): ConditionInterface
+    protected function conditionGroup($group)
     {
         if (is_callable($group)) {
             $query = new Condition;
@@ -304,7 +304,7 @@ trait BaseConditionTrait
         return $this->addComponent($componentType, $component);
     }
 
-    protected function conditionExists($query): ConditionInterface
+    protected function conditionExists($query)
     {
         $query = Helper::resolveQuery($query, $this);
         if (!($query instanceof Query)) {
@@ -324,7 +324,7 @@ trait BaseConditionTrait
         return $this->addComponent($componentType, $component);
     }
 
-    public function conditionRaw(string $expression, ...$bindings): ConditionInterface
+    public function conditionRaw(string $expression, ...$bindings)
     {
         $resolvedBindings = new SplFixedArray(count($bindings));
         foreach ($bindings as $index => $item) {

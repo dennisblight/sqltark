@@ -37,9 +37,9 @@ abstract class AbstractCondition extends AbstractComponent
     }
 
     /**
-     * @return AbstractCondition
+     * @return static Clone of current object
      */
-    public function clone(): AbstractComponent
+    public function clone()
     {
         /** @var AbstractCondition */
         $self = parent::clone();

@@ -73,11 +73,10 @@ class BetweenCondition extends AbstractCondition
     }
 
     /**
-     * @return BetweenCondition
+     * @return static Clone of current object
      */
-    public function clone(): AbstractComponent
+    public function clone()
     {
-        /** @var BetweenCondition */
         $self = parent::clone();
 
         $self->lower = $this->lower instanceof Query

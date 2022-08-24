@@ -20,7 +20,7 @@ trait GroupByTrait
     /**
      * @return $this Self object
      */
-    public function groupBy(...$columns): QueryInterface
+    public function groupBy(...$columns)
     {
         if (func_num_args() == 1 && is_iterable($columns[0])) {
             $columns = $columns[0];
@@ -43,7 +43,7 @@ trait GroupByTrait
     /**
      * @return $this Self object
      */
-    public function groupByRaw(string $expression, ...$bindings): QueryInterface
+    public function groupByRaw(string $expression, ...$bindings)
     {
         $resolvedBindings = new SplFixedArray(count($bindings));
         foreach ($bindings as $index => $item) {

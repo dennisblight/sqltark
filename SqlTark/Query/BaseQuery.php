@@ -219,7 +219,7 @@ abstract class BaseQuery implements QueryInterface
     /**
      * @return static Clone of current object
      */
-    public function clone(): QueryInterface
+    public function clone()
     {
         $self = new static;
 
@@ -233,6 +233,9 @@ abstract class BaseQuery implements QueryInterface
         return $self;
     }
 
+    /**
+     * @return $this Self object
+     */
     public function for(int $engine, callable $callback): QueryInterface
     {
         $this->engineScope = $engine;
@@ -244,7 +247,10 @@ abstract class BaseQuery implements QueryInterface
         return $result;
     }
 
-    public function when(bool $condition, ?callable $whenTrue, ?callable $whenFalse): QueryInterface
+    /**
+     * @return $this Self object
+     */
+    public function when(bool $condition, ?callable $whenTrue, ?callable $whenFalse)
     {
         if($condition && !is_null($whenTrue))
         {

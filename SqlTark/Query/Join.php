@@ -49,7 +49,7 @@ class Join extends BaseQuery implements ConditionInterface
     /**
      * @return $this Self object
      */
-    public function joinWith($table, ?string $alias = null): QueryInterface
+    public function joinWith($table, ?string $alias = null)
     {
         return $this->from($table, $alias);
     }
@@ -57,7 +57,7 @@ class Join extends BaseQuery implements ConditionInterface
     /**
      * @return $this Self object
      */
-    public function asType(int $type): QueryInterface
+    public function asType(int $type)
     {
         $this->type = $type;
         return $this;
@@ -66,7 +66,7 @@ class Join extends BaseQuery implements ConditionInterface
     /**
      * @return $this Self object
      */
-    public function asInnerJoin(): QueryInterface
+    public function asInnerJoin()
     {
         return $this->asType(JoinType::InnerJoin);
     }
@@ -74,7 +74,7 @@ class Join extends BaseQuery implements ConditionInterface
     /**
      * @return $this Self object
      */
-    public function asLeftJoin(): QueryInterface
+    public function asLeftJoin()
     {
         return $this->asType(JoinType::LeftJoin);
     }
@@ -82,7 +82,7 @@ class Join extends BaseQuery implements ConditionInterface
     /**
      * @return $this Self object
      */
-    public function asRightJoin(): QueryInterface
+    public function asRightJoin()
     {
         return $this->asType(JoinType::RightJoin);
     }
@@ -90,7 +90,7 @@ class Join extends BaseQuery implements ConditionInterface
     /**
      * @return $this Self object
      */
-    public function asOuterJoin(): QueryInterface
+    public function asOuterJoin()
     {
         return $this->asType(JoinType::OuterJoin);
     }
@@ -98,7 +98,7 @@ class Join extends BaseQuery implements ConditionInterface
     /**
      * @return $this Self object
      */
-    public function asNaturalJoin(): QueryInterface
+    public function asNaturalJoin()
     {
         return $this->asType(JoinType::NaturalJoin);
     }
@@ -106,7 +106,7 @@ class Join extends BaseQuery implements ConditionInterface
     /**
      * @return $this Self object
      */
-    public function asLeftOuterJoin(): QueryInterface
+    public function asLeftOuterJoin()
     {
         return $this->asType(JoinType::LeftOuterJoin);
     }
@@ -114,7 +114,7 @@ class Join extends BaseQuery implements ConditionInterface
     /**
      * @return $this Self object
      */
-    public function asRightOuterJoin(): QueryInterface
+    public function asRightOuterJoin()
     {
         return $this->asType(JoinType::RightOuterJoin);
     }
@@ -122,15 +122,15 @@ class Join extends BaseQuery implements ConditionInterface
     /**
      * @return $this Self object
      */
-    public function asFullOuterJoin(): QueryInterface
+    public function asFullOuterJoin()
     {
         return $this->asType(JoinType::FullOuterJoin);
     }
 
     /**
-     * @return $this Self object
+     * @return static Clone of current object
      */
-    public function clone(): QueryInterface
+    public function clone()
     {
         $self = parent::clone();
 

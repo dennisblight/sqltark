@@ -43,13 +43,16 @@ trait FromTrait
     /**
      * @return $this Self object
      */
-    public function alias(?string $alias): QueryInterface
+    public function alias(?string $alias)
     {
         $this->alias = $alias;
         return $this;
     }
 
-    public function from($table, ?string $alias = null): QueryInterface
+    /**
+     * @return $this Self object
+     */
+    public function from($table, ?string $alias = null)
     {
         $table = Helper::resolveQuery($table, $this);
 
@@ -80,14 +83,11 @@ trait FromTrait
     {
         $columnCount = null;
         $resolvedColumns = null;
-        if(func_num_args() == 2)
-        {
+        if (func_num_args() == 2) {
             $resolvedColumns = [];
             $columnCount = 0;
-            foreach($columns as $row)
-            {
-                foreach($row as $column => $value)
-                {
+            foreach ($columns as $row) {
+                foreach ($row as $column => $value) {
                     $resolvedColumns[] = $column;
                     $columnCount++;
                 }
@@ -100,22 +100,18 @@ trait FromTrait
         }
 
         $columnCount = $columnCount ?? Helper::countIterable($columns);
-        if($columnCount == 0)
-        {
+        if ($columnCount == 0) {
             throw new InvalidArgumentException(
                 "Could not create ad hoc table with no columns"
             );
         }
 
-        if(is_null($resolvedColumns))
-        {
+        if (is_null($resolvedColumns)) {
             $resolvedColumns = new SplFixedArray($columnCount);
 
             $index = 0;
-            foreach($columns as $column)
-            {
-                if(!is_scalar($column))
-                {
+            foreach ($columns as $column) {
+                if (!is_scalar($column)) {
                     $class = Helper::getType($column);
                     throw new InvalidArgumentException(
                         "Columns must be string. '$class' found"
@@ -128,8 +124,7 @@ trait FromTrait
         }
 
         $rowsCount = Helper::countIterable($values);
-        if($rowsCount == 0)
-        {
+        if ($rowsCount == 0) {
             throw new InvalidArgumentException(
                 "Could not create ad hoc table with no rows"
             );
@@ -137,12 +132,15 @@ trait FromTrait
 
         $resolvedRows = new SplFixedArray($rowsCount);
         $rowIndex = 0;
-        foreach ($values as $row)
-        {
+        foreach ($values as $row) {
             $resolvedRow = new SplFixedArray($columnCount);
             $columnIndex = 0;
-            foreach($row as $value)
-            {
+            foreach ($row as $value) {
+                if ($columnIndex >= $columnCount) {
+                    throw new InvalidArgumentException(
+                        "Array values count must same with columns count."
+                    );
+                }
                 $resolvedRow[$columnIndex] = Helper::resolveLiteral($value, 'value');
                 $columnIndex++;
             }

@@ -30,11 +30,10 @@ class ColumnClause extends AbstractColumn
     }
 
     /**
-     * @return ColumnClause
+     * @return static Clone of current object
      */
-    public function clone(): AbstractComponent
+    public function clone()
     {
-        /** @var ColumnClause */
         $self = parent::clone();
 
         $self->column = $this->column instanceof Query

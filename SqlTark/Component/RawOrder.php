@@ -46,11 +46,10 @@ class RawOrder extends AbstractOrder
     }
 
     /**
-     * @return RawOrder
+     * @return static Clone of current object
      */
-    public function clone(): AbstractComponent
+    public function clone()
     {
-        /** @var RawOrder */
         $self = parent::clone();
 
         $self->expression = $this->expression;
