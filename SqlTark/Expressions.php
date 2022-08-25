@@ -32,3 +32,23 @@ final class Expressions
         return $result->wrap($wrap);
     }
 }
+
+namespace SqlTark\Expressions;
+
+function literal($value, ?string $wrap = null): Literal
+{
+    $result = new Literal($value);
+    return $result->wrap($wrap);
+}
+
+function column(string $name, ?string $wrap = null): Column
+{
+    $result = new Column($name);
+    return $result->wrap($wrap);
+}
+
+function variable(string $name, ?string $wrap = null): Variable
+{
+    $result = new Variable($name);
+    return $result->wrap($wrap);
+}

@@ -8,7 +8,6 @@ use SqlTark\Component\JoinType;
 use SqlTark\Query\BaseQuery;
 use SqlTark\Query\Traits\FromTrait;
 use SqlTark\Query\Interfaces\ConditionInterface;
-use SqlTark\Query\Interfaces\QueryInterface;
 use SqlTark\Query\Traits\JoinConditionTrait;
 
 /**

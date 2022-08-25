@@ -7,8 +7,6 @@ namespace SqlTark\Query\Traits;
 use SqlTark\Component\ComponentType;
 use SqlTark\Component\LimitClause;
 use SqlTark\Component\OffsetClause;
-use SqlTark\Query\BaseQuery;
-use SqlTark\Query\Interfaces\QueryInterface;
 
 trait PagingTrait
 {
@@ -20,7 +18,6 @@ trait PagingTrait
         $component = new LimitClause;
         $component->setLimit($limit);
 
-        /** @var BaseQuery $this */
         return $this->addOrReplaceComponent(ComponentType::Limit, $component);
     }
 
@@ -32,7 +29,6 @@ trait PagingTrait
         $component = new OffsetClause;
         $component->setOffset($offset);
 
-        /** @var BaseQuery */
         return $this->addOrReplaceComponent(ComponentType::Offset, $component);
     }
 

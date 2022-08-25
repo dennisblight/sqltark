@@ -79,7 +79,7 @@ trait FromTrait
     /**
      * @return $this Self object
      */
-    public function fromAdHoc(string $alias, iterable $columns, ?iterable $values = null): QueryInterface
+    public function fromAdHoc(string $alias, iterable $columns, ?iterable $values = null)
     {
         $columnCount = null;
         $resolvedColumns = null;
@@ -166,7 +166,7 @@ trait FromTrait
     /**
      * @return $this Self object
      */
-    public function fromRaw(string $expression, ...$bindings): QueryInterface
+    public function fromRaw(string $expression, ...$bindings)
     {
         $resolvedBindings = new SplFixedArray(count($bindings));
         foreach ($bindings as $index => $item) {

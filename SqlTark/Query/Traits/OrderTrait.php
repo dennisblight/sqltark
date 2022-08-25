@@ -4,15 +4,10 @@ declare(strict_types=1);
 
 namespace SqlTark\Query\Traits;
 
-use SqlTark\Expressions;
-use SqlTark\Query\Query;
-use InvalidArgumentException;
 use SqlTark\Component\OrderClause;
 use SqlTark\Component\RandomOrder;
 use SqlTark\Component\ComponentType;
-use SqlTark\Expressions\BaseExpression;
 use SqlTark\Helper;
-use SqlTark\Query\Interfaces\QueryInterface;
 
 trait OrderTrait
 {

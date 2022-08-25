@@ -94,97 +94,97 @@ interface HavingInterface extends ConditionInterface
      * Having value like using ```and``` clause
      * @return $this Self object
      */
-    public function havingLike($column, string $value, bool $caseSensitive, ?string $escapeCharacter);
+    public function havingLike($column, string $value, bool $caseSensitive = false, ?string $escapeCharacter = null);
 
     /**
      * Having value like using ```or``` clause
      * @return $this Self object
      */
-    public function orHavingLike($column, string $value, bool $caseSensitive, ?string $escapeCharacter);
+    public function orHavingLike($column, string $value, bool $caseSensitive = false, ?string $escapeCharacter = null);
 
     /**
      * Having value like using ```not``` clause
      * @return $this Self object
      */
-    public function havingNotLike($column, string $value, bool $caseSensitive, ?string $escapeCharacter);
+    public function havingNotLike($column, string $value, bool $caseSensitive = false, ?string $escapeCharacter = null);
 
     /**
      * Having value like using ```or``` and ```not``` clause
      * @return $this Self object
      */
-    public function orHavingNotLike($column, string $value, bool $caseSensitive, ?string $escapeCharacter);
+    public function orHavingNotLike($column, string $value, bool $caseSensitive = false, ?string $escapeCharacter = null);
 
     /**
      * Having value starts with using ```and``` clause
      * @return $this Self object
      */
-    public function havingStarts($column, string $value, bool $caseSensitive, ?string $escapeCharacter);
+    public function havingStarts($column, string $value, bool $caseSensitive = false, ?string $escapeCharacter = null);
 
     /**
      * Having value starts with using ```or``` clause
      * @return $this Self object
      */
-    public function orHavingStarts($column, string $value, bool $caseSensitive, ?string $escapeCharacter);
+    public function orHavingStarts($column, string $value, bool $caseSensitive = false, ?string $escapeCharacter = null);
 
     /**
      * Having value starts with using ```not``` clause
      * @return $this Self object
      */
-    public function havingNotStarts($column, string $value, bool $caseSensitive, ?string $escapeCharacter);
+    public function havingNotStarts($column, string $value, bool $caseSensitive = false, ?string $escapeCharacter = null);
 
     /**
      * Having value starts with using ```or``` and ```not``` clause
      * @return $this Self object
      */
-    public function orHavingNotStarts($column, string $value, bool $caseSensitive, ?string $escapeCharacter);
+    public function orHavingNotStarts($column, string $value, bool $caseSensitive = false, ?string $escapeCharacter = null);
 
     /**
      * Having value ends with using ```and``` clause
      * @return $this Self object
      */
-    public function havingEnds($column, string $value, bool $caseSensitive, ?string $escapeCharacter);
+    public function havingEnds($column, string $value, bool $caseSensitive = false, ?string $escapeCharacter = null);
 
     /**
      * Having value ends with using ```or``` clause
      * @return $this Self object
      */
-    public function orHavingEnds($column, string $value, bool $caseSensitive, ?string $escapeCharacter);
+    public function orHavingEnds($column, string $value, bool $caseSensitive = false, ?string $escapeCharacter = null);
 
     /**
      * Having value ends with using ```not``` clause
      * @return $this Self object
      */
-    public function havingNotEnds($column, string $value, bool $caseSensitive, ?string $escapeCharacter);
+    public function havingNotEnds($column, string $value, bool $caseSensitive = false, ?string $escapeCharacter = null);
 
     /**
      * Having value ends with using ```or``` and ```not``` clause
      * @return $this Self object
      */
-    public function orHavingNotEnds($column, string $value, bool $caseSensitive, ?string $escapeCharacter);
+    public function orHavingNotEnds($column, string $value, bool $caseSensitive = false, ?string $escapeCharacter = null);
 
     /**
      * Having value contains using ```and``` clause
      * @return $this Self object
      */
-    public function havingContains($column, string $value, bool $caseSensitive, ?string $escapeCharacter);
+    public function havingContains($column, string $value, bool $caseSensitive = false, ?string $escapeCharacter = null);
 
     /**
      * Having value contains using ```or``` clause
      * @return $this Self object
      */
-    public function orHavingContains($column, string $value, bool $caseSensitive, ?string $escapeCharacter);
+    public function orHavingContains($column, string $value, bool $caseSensitive = false, ?string $escapeCharacter = null);
 
     /**
      * Having value contains using ```not``` clause
      * @return $this Self object
      */
-    public function havingNotContains($column, string $value, bool $caseSensitive, ?string $escapeCharacter);
+    public function havingNotContains($column, string $value, bool $caseSensitive = false, ?string $escapeCharacter = null);
 
     /**
      * Having value contains using ```or``` and ```not``` clause
      * @return $this Self object
      */
-    public function orHavingNotContains($column, string $value, bool $caseSensitive, ?string $escapeCharacter);
+    public function orHavingNotContains($column, string $value, bool $caseSensitive = false, ?string $escapeCharacter = null);
 
     /**
      * Having value is between two values using ```and``` clause

@@ -16,6 +16,9 @@ trait JoinTrait
 {
     private $joinType = JoinType::Join;
 
+    /**
+     * @return $this Self object
+     */
     public function join($table, $left = null, $operator = null, $right = null, $joinType = JoinType::Join)
     {
         if (func_num_args() == 1) {
@@ -88,6 +91,9 @@ trait JoinTrait
         return $this->addComponent(ComponentType::Join, $component);
     }
 
+    /**
+     * @return $this Self object
+     */
     public function innerJoin($table, $left, $operator = null, $right = null)
     {
         $this->joinType = JoinType::InnerJoin;
@@ -96,6 +102,9 @@ trait JoinTrait
         return $result;
     }
 
+    /**
+     * @return $this Self object
+     */
     public function leftJoin($table, $left, $operator = null, $right = null)
     {
         $this->joinType = JoinType::LeftJoin;
@@ -104,6 +113,9 @@ trait JoinTrait
         return $result;
     }
 
+    /**
+     * @return $this Self object
+     */
     public function rightJoin($table, $left, $operator = null, $right = null)
     {
         $this->joinType = JoinType::RightJoin;
@@ -112,6 +124,9 @@ trait JoinTrait
         return $result;
     }
 
+    /**
+     * @return $this Self object
+     */
     public function leftOuterJoin($table, $left, $operator = null, $right = null)
     {
         $this->joinType = JoinType::LeftOuterJoin;
@@ -120,6 +135,9 @@ trait JoinTrait
         return $result;
     }
 
+    /**
+     * @return $this Self object
+     */
     public function rightOuterJoin($table, $left, $operator = null, $right = null)
     {
         $this->joinType = JoinType::RightOuterJoin;
@@ -128,6 +146,9 @@ trait JoinTrait
         return $result;
     }
 
+    /**
+     * @return $this Self object
+     */
     public function outerJoin($table, $left, $operator = null, $right = null)
     {
         $this->joinType = JoinType::OuterJoin;
@@ -136,6 +157,9 @@ trait JoinTrait
         return $result;
     }
 
+    /**
+     * @return $this Self object
+     */
     public function fullOuterJoin($table, $left, $operator = null, $right = null)
     {
         $this->joinType = JoinType::FullOuterJoin;
@@ -144,6 +168,9 @@ trait JoinTrait
         return $result;
     }
 
+    /**
+     * @return $this Self object
+     */
     public function naturalJoin($table)
     {
         $join = new Join($table, JoinType::NaturalJoin);
@@ -153,6 +180,9 @@ trait JoinTrait
         return $this->addComponent(ComponentType::Join, $join);
     }
 
+    /**
+     * @return $this Self object
+     */
     public function crossJoin($table)
     {
         $join = new Join($table, JoinType::CrossJoin);

@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace SqlTark\Query\Traits;
 
 use SqlTark\Component\LikeType;
-use SqlTark\Query\Interfaces\ConditionInterface;
 
 trait HavingTrait
 {
@@ -81,82 +80,82 @@ trait HavingTrait
         return $this->or()->not()->havingNull($column);
     }
 
-    public function havingLike($column, string $value, bool $caseSensitive, ?string $escapeCharacter)
+    public function havingLike($column, string $value, bool $caseSensitive = false, ?string $escapeCharacter = null)
     {
         return $this->withHaving()->conditionLike($column, $value, $caseSensitive, $escapeCharacter, LikeType::Like);
     }
 
-    public function orHavingLike($column, string $value, bool $caseSensitive, ?string $escapeCharacter)
+    public function orHavingLike($column, string $value, bool $caseSensitive = false, ?string $escapeCharacter = null)
     {
         return $this->or()->havingLike($column, $value, $caseSensitive, $escapeCharacter);
     }
 
-    public function havingNotLike($column, string $value, bool $caseSensitive, ?string $escapeCharacter)
+    public function havingNotLike($column, string $value, bool $caseSensitive = false, ?string $escapeCharacter = null)
     {
         return $this->not()->havingLike($column, $value, $caseSensitive, $escapeCharacter);
     }
 
-    public function orHavingNotLike($column, string $value, bool $caseSensitive, ?string $escapeCharacter)
+    public function orHavingNotLike($column, string $value, bool $caseSensitive = false, ?string $escapeCharacter = null)
     {
         return $this->or()->not()->havingLike($column, $value, $caseSensitive, $escapeCharacter);
     }
 
-    public function havingStarts($column, string $value, bool $caseSensitive, ?string $escapeCharacter)
+    public function havingStarts($column, string $value, bool $caseSensitive = false, ?string $escapeCharacter = null)
     {
         return $this->withHaving()->conditionLike($column, $value, $caseSensitive, $escapeCharacter, LikeType::Starts);
     }
 
-    public function orHavingStarts($column, string $value, bool $caseSensitive, ?string $escapeCharacter)
+    public function orHavingStarts($column, string $value, bool $caseSensitive = false, ?string $escapeCharacter = null)
     {
         return $this->or()->havingStarts($column, $value, $caseSensitive, $escapeCharacter);
     }
 
-    public function havingNotStarts($column, string $value, bool $caseSensitive, ?string $escapeCharacter)
+    public function havingNotStarts($column, string $value, bool $caseSensitive = false, ?string $escapeCharacter = null)
     {
         return $this->not()->havingStarts($column, $value, $caseSensitive, $escapeCharacter);
     }
 
-    public function orHavingNotStarts($column, string $value, bool $caseSensitive, ?string $escapeCharacter)
+    public function orHavingNotStarts($column, string $value, bool $caseSensitive = false, ?string $escapeCharacter = null)
     {
         return $this->or()->not()->havingStarts($column, $value, $caseSensitive, $escapeCharacter);
     }
 
-    public function havingEnds($column, string $value, bool $caseSensitive, ?string $escapeCharacter)
+    public function havingEnds($column, string $value, bool $caseSensitive = false, ?string $escapeCharacter = null)
     {
         return $this->withHaving()->conditionLike($column, $value, $caseSensitive, $escapeCharacter, LikeType::Ends);
     }
 
-    public function orHavingEnds($column, string $value, bool $caseSensitive, ?string $escapeCharacter)
+    public function orHavingEnds($column, string $value, bool $caseSensitive = false, ?string $escapeCharacter = null)
     {
         return $this->or()->havingEnds($column, $value, $caseSensitive, $escapeCharacter);
     }
 
-    public function havingNotEnds($column, string $value, bool $caseSensitive, ?string $escapeCharacter)
+    public function havingNotEnds($column, string $value, bool $caseSensitive = false, ?string $escapeCharacter = null)
     {
         return $this->not()->havingEnds($column, $value, $caseSensitive, $escapeCharacter);
     }
 
-    public function orHavingNotEnds($column, string $value, bool $caseSensitive, ?string $escapeCharacter)
+    public function orHavingNotEnds($column, string $value, bool $caseSensitive = false, ?string $escapeCharacter = null)
     {
         return $this->or()->not()->havingEnds($column, $value, $caseSensitive, $escapeCharacter);
     }
 
-    public function havingContains($column, string $value, bool $caseSensitive, ?string $escapeCharacter)
+    public function havingContains($column, string $value, bool $caseSensitive = false, ?string $escapeCharacter = null)
     {
         return $this->withHaving()->conditionLike($column, $value, $caseSensitive, $escapeCharacter, LikeType::Contains);
     }
 
-    public function orHavingContains($column, string $value, bool $caseSensitive, ?string $escapeCharacter)
+    public function orHavingContains($column, string $value, bool $caseSensitive = false, ?string $escapeCharacter = null)
     {
         return $this->or()->havingContains($column, $value, $caseSensitive, $escapeCharacter);
     }
 
-    public function havingNotContains($column, string $value, bool $caseSensitive, ?string $escapeCharacter)
+    public function havingNotContains($column, string $value, bool $caseSensitive = false, ?string $escapeCharacter = null)
     {
         return $this->not()->havingContains($column, $value, $caseSensitive, $escapeCharacter);
     }
 
-    public function orHavingNotContains($column, string $value, bool $caseSensitive, ?string $escapeCharacter)
+    public function orHavingNotContains($column, string $value, bool $caseSensitive = false, ?string $escapeCharacter = null)
     {
         return $this->or()->not()->havingContains($column, $value, $caseSensitive, $escapeCharacter);
     }

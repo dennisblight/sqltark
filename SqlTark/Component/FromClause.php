@@ -49,7 +49,7 @@ class FromClause extends AbstractFrom
             }
         }
 
-        return $this->table;
+        return $this->alias;
     }
 
     /**

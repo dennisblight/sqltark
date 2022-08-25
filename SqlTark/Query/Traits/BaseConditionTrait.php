@@ -22,7 +22,6 @@ use SqlTark\Component\BetweenCondition;
 use SqlTark\Component\ExistsCondition;
 use SqlTark\Expressions\BaseExpression;
 use SqlTark\Query\Condition;
-use SqlTark\Query\Interfaces\ConditionInterface;
 
 trait BaseConditionTrait
 {
@@ -188,6 +187,7 @@ trait BaseConditionTrait
                         "Could not resolve '$class' for values item"
                     );
                 }
+                $resolvedValues[$index] = $value;
 
                 $index++;
             }
@@ -230,7 +230,7 @@ trait BaseConditionTrait
         return $this->addComponent($componentType, $component);
     }
 
-    protected function conditionLike($column, string $value, bool $caseSensitive, ?string $escapeCharacter, $type = LikeType::Like)
+    protected function conditionLike($column, string $value, bool $caseSensitive = false, ?string $escapeCharacter = null, $type = LikeType::Like)
     {
         $column = Helper::resolveQuery($column, $this);
         $column = Helper::resolveExpression($column, 'column');

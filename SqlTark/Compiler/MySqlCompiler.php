@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace SqlTark\Compiler;
 
-
 class MySqlCompiler extends BaseCompiler
 {
     public const OpeningIdentifier = '`';

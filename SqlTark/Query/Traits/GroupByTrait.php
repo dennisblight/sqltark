@@ -12,8 +12,6 @@ use SqlTark\Component\RawColumn;
 use SqlTark\Expressions;
 use SqlTark\Expressions\BaseExpression;
 use SqlTark\Helper;
-use SqlTark\Query\Interfaces\QueryInterface;
-use SqlTark\Query\Query;
 
 trait GroupByTrait
 {

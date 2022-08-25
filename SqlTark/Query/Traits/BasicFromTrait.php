@@ -8,7 +8,6 @@ use InvalidArgumentException;
 use SqlTark\Component\FromClause;
 use SqlTark\Component\ComponentType;
 use SqlTark\Helper;
-use SqlTark\Query\Interfaces\QueryInterface;
 
 trait BasicFromTrait
 {

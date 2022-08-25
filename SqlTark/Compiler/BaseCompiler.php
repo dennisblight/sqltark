@@ -47,7 +47,7 @@ use SqlTark\Query\UpdateQuery;
 abstract class BaseCompiler
 {
     public const ParameterPlaceholder = '?';
-    public const VariablePrefix = '@';
+    public const VariablePrefix = ':';
     public const OpeningIdentifier = '';
     public const ClosingIdentifier = '';
     public const EscapeCharacter = '\\';
@@ -177,7 +177,7 @@ abstract class BaseCompiler
             $result .= ') AS ' . $this->wrapIdentifier($alias);
         }
 
-        if (empty($result) && !static::FromTableRequired) {
+        if (empty($result) && static::FromTableRequired) {
             $result = static::DummyTable;
         }
 
@@ -331,6 +331,14 @@ abstract class BaseCompiler
                     $operator .= ' BINARY';
                 }
 
+                if($escape && $condition->getType() != LikeType::Like) {
+                    $value = str_replace(
+                        [$escape, '%', '_'],
+                        [$escape . $escape, $escape . '%', $escape . '_'],
+                        $value
+                    );
+                }
+
                 switch ($condition->getType()) {
                     case LikeType::Contains:
                         $value = "%$value%";
@@ -345,7 +353,7 @@ abstract class BaseCompiler
 
                 $value = $this->quote($value);
 
-                $resolvedCondition = "$column $operator $value";
+                $resolvedCondition = "$resolvedColumn $operator $value";
                 if ($escape) {
                     $resolvedCondition .= " ESCAPE " . $this->quote($escape);
                 }
@@ -669,7 +677,11 @@ abstract class BaseCompiler
         }
 
         $result = $this->compileSelect($selects, $query->isDistict());
-        $result .= ' FROM ' . $this->compileFrom($from);
+
+        $resolvedFrom = $this->compileFrom($from);
+        if($resolvedFrom) {
+            $result .= ' FROM ' . $resolvedFrom;
+        }
 
         $resolvedJoin = $this->compileJoin($joins);
         if($resolvedJoin) {

@@ -7,7 +7,6 @@ namespace SqlTark\Query\Traits;
 use SqlTark\Component\AggregateClause;
 use SqlTark\Component\ComponentType;
 use SqlTark\Helper;
-use SqlTark\Query\Interfaces\QueryInterface;
 use SqlTark\Query\MethodType;
 
 trait AggregateTrait
