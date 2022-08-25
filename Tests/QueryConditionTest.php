@@ -177,4 +177,42 @@ final class QueryConditionTest extends TestCase
             return $q->from('table1');
         });
     }
+
+    public function testQuery_whereIn()
+    {
+        $this->expectNotToPerformAssertions();
+        
+        $query = new Query('table1');
+
+        $q2 = new Query('table2');
+
+        $query->whereIn('col1', [1, 2, 3]);
+        $query->whereIn('col2', ['s1', 's2', 's3']);
+        $query->whereIn('col3', [1.01, 2.02, 3.03]);
+        $query->whereIn('col4', [true, false, null]);
+        $query->whereIn('col5', [true, false, null]);
+        $query->whereIn('col5', $q2);
+    }
+
+    public function testQuery_whereIn_expectError()
+    {
+        $query = new Query('table1');
+        
+        $params = [
+            new stdClass,
+            [],
+            [new Query('t2')]
+        ];
+
+        $count = 0;
+        foreach ($params as $item) {
+            try {
+                $query->where($item, $item);
+            } catch (InvalidArgumentException $ex) {
+                $count++;
+            }
+        }
+
+        $this->assertEquals($count, count($params));
+    }
 }
