@@ -37,6 +37,7 @@ use SqlTark\Component\UpdateClause;
 use SqlTark\Expressions\BaseExpression;
 use SqlTark\Expressions\Column;
 use SqlTark\Expressions\Literal;
+use SqlTark\Expressions\Raw;
 use SqlTark\Expressions\Variable;
 use SqlTark\Helper;
 use SqlTark\Query\DeleteQuery;
@@ -243,7 +244,7 @@ abstract class BaseCompiler
             else $resolvedPaging = "LIMIT $limit";
         } elseif ($offsetClause && $offsetClause->hasOffset()) {
             $offset = $offsetClause->getOffset();
-            $resolvedPaging = "LIMIT " . static::MaxValue . " OFFSET $offset";
+            $resolvedPaging = "LIMIT $offset, " . static::MaxValue;
         }
 
         return $resolvedPaging;
@@ -794,10 +795,15 @@ abstract class BaseCompiler
     {
         if ($expression instanceof Literal) {
             return $this->compileLiteral($expression);
-        } elseif ($expression instanceof Variable) {
-            return $this->compileVariable($expression);
         } elseif ($expression instanceof Column) {
             return $this->compileColumn($expression, $withAlias);
+        } elseif ($expression instanceof Raw) {
+            return $this->compileRaw(
+                $expression->getExpression(),
+                $expression->getBindings() ?? []
+            );
+        } elseif ($expression instanceof Variable) {
+            return $this->compileVariable($expression);
         }
     }
 

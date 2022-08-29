@@ -7,6 +7,7 @@ namespace SqlTark;
 use SqlTark\Expressions\Column;
 use SqlTark\Expressions\Literal;
 use SqlTark\Expressions\Variable;
+use SqlTark\Expressions\Raw;
 
 final class Expressions
 {
@@ -31,6 +32,11 @@ final class Expressions
         $result = new Literal($value);
         return $result->wrap($wrap);
     }
+
+    public static function raw(string $expression): Raw
+    {
+        return new Raw($expression);
+    }
 }
 
 namespace SqlTark\Expressions;
@@ -51,4 +57,9 @@ function variable(string $name, ?string $wrap = null): Variable
 {
     $result = new Variable($name);
     return $result->wrap($wrap);
+}
+
+function raw(string $expression): Raw
+{
+    return new Raw($expression);
 }
