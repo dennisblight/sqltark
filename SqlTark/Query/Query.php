@@ -13,6 +13,8 @@ use SqlTark\Query\Traits\FromTrait;
 use SqlTark\Query\Interfaces\ConditionInterface;
 use SqlTark\Query\Interfaces\HavingInterface;
 use SqlTark\Query\Traits\AggregateTrait;
+use SqlTark\Query\Traits\CombineTrait;
+use SqlTark\Query\Traits\CteTrait;
 use SqlTark\Query\Traits\GroupByTrait;
 use SqlTark\Query\Traits\HavingTrait;
 use SqlTark\Query\Traits\JoinTrait;
@@ -27,7 +29,9 @@ class Query extends BaseQuery implements ConditionInterface, HavingInterface
         OrderTrait,
         PagingTrait,
         GroupByTrait,
-        HavingTrait;
+        HavingTrait,
+        CombineTrait,
+        CteTrait;
 
     public function __construct($table = null)
     {
@@ -52,13 +56,19 @@ class Query extends BaseQuery implements ConditionInterface, HavingInterface
         return $self;
     }
 
-    public function insert(iterable $columns, ?iterable $values = null): InsertQuery
+    /**
+     * @return InsertQuery
+     */
+    public function insert(iterable $columns, ?iterable $values = null)
     {
         $result = InsertQuery::fromQuery($this);
         return call_user_func_array([$result, 'withValues'], func_get_args());
     }
 
-    public function insertQuery(Query $query, ?iterable $columns = null): InsertQuery
+    /**
+     * @return InsertQuery
+     */
+    public function insertQuery(Query $query, ?iterable $columns = null)
     {
         $result = InsertQuery::fromQuery($this);
         return call_user_func_array([$result, 'withQuery'], func_get_args());
@@ -66,14 +76,18 @@ class Query extends BaseQuery implements ConditionInterface, HavingInterface
 
     /**
      * @param iterable|object $value
+     * @return UpdateQuery
      */
-    public function update($value): UpdateQuery
+    public function update($value)
     {
         $result = UpdateQuery::fromQuery($this);
         return call_user_func_array([$result, 'withValue'], func_get_args());
     }
 
-    public function delete(): DeleteQuery
+    /**
+     * @return DeleteQuery
+     */
+    public function delete()
     {
         return DeleteQuery::fromQuery($this);
     }
