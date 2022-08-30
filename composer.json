@@ -1,7 +1,17 @@
 {
     "name": "dennisblight/sqltark",
-    "version": "0.1",
+    "version": "v0.9.0",
     "description": "SQL Query Builder for PHP",
+    "type": "library",
+    "keywords": ["database", "query", "query builder"],
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Dennis Arfan",
+            "email": "dennisarfan@gmail.com",
+            "role": "Developer"
+        }
+    ],
     "autoload": {
         "psr-4": {
             "SqlTark\\": "SqlTark/"
