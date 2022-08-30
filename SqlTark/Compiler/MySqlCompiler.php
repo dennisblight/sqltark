@@ -12,14 +12,22 @@ class MySqlCompiler extends BaseCompiler
 
     public const EngineCode = EngineType::MySql;
 
-    public function quote($value): ?string
+    public function quote($value, bool $quoteLike = false): ?string
     {
         if (is_string($value)) {
-            return "'" . str_replace(
+            $result = str_replace(
                 ['\\', "\r", "\n", "\t", "\x08", "'", "\"", "\x1A", "\x00"],
                 ['\\\\', '\r', '\n', '\t', '\b', "\'", '\"', '\Z', '\0'],
                 $value
-            ) . "'";
+            );
+            if($quoteLike) {
+                $result = str_replace(
+                    ['\%', '\_'],
+                    ['%', '_'],
+                    $result
+                );
+            }
+            return "'$result'";
         } elseif (is_bool($value)) {
             return $value ? 'TRUE' : 'FALSE';
         } elseif (is_scalar($value)) {
