@@ -6,6 +6,7 @@ use PHPUnit\Framework\TestCase;
 use SqlTark\Compiler\MySqlCompiler;
 use SqlTark\Query\Query;
 
+use function SqlTark\Expressions\column;
 use function SqlTark\Expressions\literal;
 
 final class CompilerTest extends TestCase
@@ -201,82 +202,528 @@ final class CompilerTest extends TestCase
     {
         $compiler = new MySqlCompiler;
 
-        $query = new Query('t1');
         $q = new Query('t2');
 
-        $query->where('c1', 1);
-        $query->orWhere('c1', 1.01);
-        $query->whereNot('c1', true);
-        $query->orWhereNot('c1', null);
+        $query = new Query('t1');
+        $query->where('c1', '=', 'val');
+        $query->where('c1', '!=', 'val');
+        $query->where('c1', '<', 'val');
+        $query->where('c1', '>', 'val');
+        $query->where('c1', 'LIKE', 'val');
 
-        $expected = "SELECT * FROM `t1` WHERE `c1` = 1 OR `c1` = 1.01 AND NOT (`c1` = TRUE) OR NOT (`c1` = NULL)";
+        $expected = "SELECT * FROM `t1` WHERE `c1` = 'val' AND `c1` != 'val' AND `c1` < 'val' AND `c1` > 'val' AND `c1` LIKE 'val'";
         $compiled = $compiler->compileQuery($query);
-        $this->assertEquals($expected, $compiled);
-        
+        $this->assertEquals($expected, $compiled, 'Test various operator');
+
         $query = new Query('t1');
         $query->where('c1', 1);
-        $query->where('c1', 2);
-        $query->orWhere('c1', 3);
-        $query->whereNot('c1', 4);
-        $query->orWhereNot('c1', 5);
-
-        $expected = "SELECT * FROM `t1` WHERE `c1` = 1 AND `c1` = 2 OR `c1` = 3 AND NOT (`c1` = 4) OR NOT (`c1` = 5)";
-        $compiled = $compiler->compileQuery($query);
-        $this->assertEquals($expected, $compiled);
-        
-        $query = new Query('t1');
         $query->where('c1', 1.01);
-        $query->where('c1', 2.02);
-        $query->orWhere('c1', 3.03);
-        $query->whereNot('c1', 4.04);
-        $query->orWhereNot('c1', 5.05);
-
-        $expected = "SELECT * FROM `t1` WHERE `c1` = 1.01 AND `c1` = 2.02 OR `c1` = 3.03 AND NOT (`c1` = 4.04) OR NOT (`c1` = 5.05)";
-        $compiled = $compiler->compileQuery($query);
-        $this->assertEquals($expected, $compiled);
-        
-        $query = new Query('t1');
-        $query->where('c1', false);
         $query->where('c1', true);
-        $query->orWhere('c1', false);
-        $query->whereNot('c1', true);
-        $query->orWhereNot('c1', false);
+        $query->where('c1', null);
+        $query->where('c1', 'null');
 
-        $expected = "SELECT * FROM `t1` WHERE `c1` = FALSE AND `c1` = TRUE OR `c1` = FALSE AND NOT (`c1` = TRUE) OR NOT (`c1` = FALSE)";
+        $expected = "SELECT * FROM `t1` WHERE `c1` = 1 AND `c1` = 1.01 AND `c1` = TRUE AND `c1` = NULL AND `c1` = 'null'";
         $compiled = $compiler->compileQuery($query);
-        $this->assertEquals($expected, $compiled);
-        
+        $this->assertEquals($expected, $compiled, 'Test chaining and');
+
         $query = new Query('t1');
-        $query->where('c1', null);
-        $query->where('c1', null);
+        $query->orWhere('c1', 1);
+        $query->orWhere('c1', 1.01);
+        $query->orWhere('c1', true);
         $query->orWhere('c1', null);
+        $query->orWhere('c1', 'null');
+
+        $expected = "SELECT * FROM `t1` WHERE `c1` = 1 OR `c1` = 1.01 OR `c1` = TRUE OR `c1` = NULL OR `c1` = 'null'";
+        $compiled = $compiler->compileQuery($query);
+        $this->assertEquals($expected, $compiled, 'Test chaining or');
+
+        $query = new Query('t1');
+        $query->whereNot('c1', 1);
+        $query->whereNot('c1', 1.01);
+        $query->whereNot('c1', true);
         $query->whereNot('c1', null);
-        $query->orWhereNot('c1', null);
+        $query->whereNot('c1', 'null');
 
-        $expected = "SELECT * FROM `t1` WHERE `c1` = NULL AND `c1` = NULL OR `c1` = NULL AND NOT (`c1` = NULL) OR NOT (`c1` = NULL)";
+        $expected = "SELECT * FROM `t1` WHERE NOT (`c1` = 1) AND NOT (`c1` = 1.01) AND NOT (`c1` = TRUE) AND NOT (`c1` = NULL) AND NOT (`c1` = 'null')";
         $compiled = $compiler->compileQuery($query);
-        $this->assertEquals($expected, $compiled);
+        $this->assertEquals($expected, $compiled, 'Test chaining not');
+
+        $query = new Query('t1');
+        $query->where('t1.c1', $q);
+
+        $expected = "SELECT * FROM `t1` WHERE `t1`.`c1` = (SELECT * FROM `t2`)";
+        $compiled = $compiler->compileQuery($query);
+        $this->assertEquals($expected, $compiled, 'Test column against query');
+
+        $query = new Query('t1');
+        $query->where('t1.c1', function($q) { return $q->from('t2'); });
+
+        $expected = "SELECT * FROM `t1` WHERE `t1`.`c1` = (SELECT * FROM `t2`)";
+        $compiled = $compiler->compileQuery($query);
+        $this->assertEquals($expected, $compiled, 'Test column against closure');
+
+        $query = new Query('t1');
+        $query->where(1, 'val');
+        $query->where(1.01, 'val');
+        $query->where(true, 'val');
+        $query->where(literal('val'), 'val');
+
+        $expected = "SELECT * FROM `t1` WHERE 1 = 'val' AND 1.01 = 'val' AND TRUE = 'val' AND 'val' = 'val'";
+        $compiled = $compiler->compileQuery($query);
+        $this->assertEquals($expected, $compiled, 'Test literal against literal');
+
+        $query = new Query('t1');
+        $query->where(1, column('val'));
+        $query->where(1.01, column('val'));
+        $query->where(true, column('val'));
+        $query->where(literal('val'), column('t1.val'));
+
+        $expected = "SELECT * FROM `t1` WHERE 1 = `val` AND 1.01 = `val` AND TRUE = `val` AND 'val' = `t1`.`val`";
+        $compiled = $compiler->compileQuery($query);
+        $this->assertEquals($expected, $compiled, 'Test literal against column');
+
+        $query = new Query('t1');
+        $query->where($q, $q);
+
+        $expected = "SELECT * FROM `t1` WHERE (SELECT * FROM `t2`) = (SELECT * FROM `t2`)";
+        $compiled = $compiler->compileQuery($query);
+        $this->assertEquals($expected, $compiled, 'Test query against query');
+
+        $query = new Query('t1');
+        $query->where($q, function($q) { return $q->from('tbl'); });
+
+        $expected = "SELECT * FROM `t1` WHERE (SELECT * FROM `t2`) = (SELECT * FROM `tbl`)";
+        $compiled = $compiler->compileQuery($query);
+        $this->assertEquals($expected, $compiled, 'Test query against closure');
+
+        $query = new Query('t1');
+        $query->where(function($q) { return $q->from('tbl'); }, $q);
+
+        $expected = "SELECT * FROM `t1` WHERE (SELECT * FROM `tbl`) = (SELECT * FROM `t2`)";
+        $compiled = $compiler->compileQuery($query);
+        $this->assertEquals($expected, $compiled, 'Test closure against query');
+
+        $query = new Query('t1');
+        $query->where(function($q) { return $q->from('tbl'); }, function($q) { return $q->from('tbl'); });
+
+        $expected = "SELECT * FROM `t1` WHERE (SELECT * FROM `tbl`) = (SELECT * FROM `tbl`)";
+        $compiled = $compiler->compileQuery($query);
+        $this->assertEquals($expected, $compiled, 'Test closure against closure');
+    }
+
+    public function testQuery_whereIn()
+    {
+        $compiler = new MySqlCompiler;
+
+        $q = new Query('t2');
+        $fn = function($q) { return $q->from('tbl'); };
+        
+        // Test various modifier
+        $query = new Query('t1');
+        $query->whereIn('c1', [1, 2.02, true]);
+        $query->whereNotIn('c1', [null, 'str', 1]);
+        $query->orWhereIn('c1', [2.02, true, null]);
+        $query->orWhereNotIn('c1', ['str', 1, 2.02]);
+
+        $expected = "SELECT * FROM `t1` WHERE `c1` IN (1, 2.02, TRUE) AND `c1` NOT IN (NULL, 'str', 1) OR `c1` IN (2.02, TRUE, NULL) OR `c1` NOT IN ('str', 1, 2.02)";
+        $compiled = $compiler->compileQuery($query);
+        $this->assertEquals($expected, $compiled, 'Test various modifier');
         
         $query = new Query('t1');
-        $query->where('c1', $q);
-        $query->where('c1', $q);
-        $query->orWhere('c1', $q);
-        $query->whereNot('c1', $q);
-        $query->orWhereNot('c1', $q);
+        $query->whereIn('c1', $q);
 
-        $expected = "SELECT * FROM `t1` WHERE `c1` = (SELECT * FROM `t2`) AND `c1` = (SELECT * FROM `t2`) OR `c1` = (SELECT * FROM `t2`) AND NOT (`c1` = (SELECT * FROM `t2`)) OR NOT (`c1` = (SELECT * FROM `t2`))";
+        $expected = "SELECT * FROM `t1` WHERE `c1` IN (SELECT * FROM `t2`)";
         $compiled = $compiler->compileQuery($query);
-        $this->assertEquals($expected, $compiled);
+        $this->assertEquals($expected, $compiled, 'Test against query');
         
         $query = new Query('t1');
-        $query->where('c1', function($q) { return $q->from('t3'); });
-        $query->where('c1', function($q) { return $q->from('t3'); });
-        $query->orWhere('c1', function($q) { return $q->from('t3'); });
-        $query->whereNot('c1', function($q) { return $q->from('t3'); });
-        $query->orWhereNot('c1', function($q) { return $q->from('t3'); });
+        $query->whereIn('c1', $fn);
 
-        $expected = "SELECT * FROM `t1` WHERE `c1` = (SELECT * FROM `t3`) AND `c1` = (SELECT * FROM `t3`) OR `c1` = (SELECT * FROM `t3`) AND NOT (`c1` = (SELECT * FROM `t3`)) OR NOT (`c1` = (SELECT * FROM `t3`))";
+        $expected = "SELECT * FROM `t1` WHERE `c1` IN (SELECT * FROM `tbl`)";
         $compiled = $compiler->compileQuery($query);
+        $this->assertEquals($expected, $compiled, 'Test against closure');
+        
+        $query = new Query('t1');
+        $query->whereIn(1, [1, 2.02]);
+        $query->whereIn(1.01, [true, null]);
+        $query->whereIn(true, ['5', column('x')]);
+        $query->whereIn(null, $q);
+        $query->whereIn(literal('str'), $fn);
+
+        $expected = "SELECT * FROM `t1` WHERE 1 IN (1, 2.02) AND 1.01 IN (TRUE, NULL) AND TRUE IN ('5', `x`) AND NULL IN (SELECT * FROM `t2`) AND 'str' IN (SELECT * FROM `tbl`)";
+        $compiled = $compiler->compileQuery($query);
+        $this->assertEquals($expected, $compiled, 'Test literal in');
+        
+        $query = new Query('t1');
+        $query->whereIn($q, [1, 2.02]);
+        $query->whereIn($q, [true, null]);
+        $query->whereIn($q, ['5', column('x')]);
+        $query->whereIn($q, $q);
+        $query->whereIn($q, $fn);
+
+        $expected = "SELECT * FROM `t1` WHERE (SELECT * FROM `t2`) IN (1, 2.02) AND (SELECT * FROM `t2`) IN (TRUE, NULL) AND (SELECT * FROM `t2`) IN ('5', `x`) AND (SELECT * FROM `t2`) IN (SELECT * FROM `t2`) AND (SELECT * FROM `t2`) IN (SELECT * FROM `tbl`)";
+        $compiled = $compiler->compileQuery($query);
+        $this->assertEquals($expected, $compiled, 'Test query in');
+        
+        $query = new Query('t1');
+        $query->whereIn($fn, [1, 2.02]);
+        $query->whereIn($fn, [true, null]);
+        $query->whereIn($fn, ['5', column('x')]);
+        $query->whereIn($fn, $q);
+        $query->whereIn($fn, $fn);
+
+        $expected = "SELECT * FROM `t1` WHERE (SELECT * FROM `tbl`) IN (1, 2.02) AND (SELECT * FROM `tbl`) IN (TRUE, NULL) AND (SELECT * FROM `tbl`) IN ('5', `x`) AND (SELECT * FROM `tbl`) IN (SELECT * FROM `t2`) AND (SELECT * FROM `tbl`) IN (SELECT * FROM `tbl`)";
+        $compiled = $compiler->compileQuery($query);
+        $this->assertEquals($expected, $compiled, 'Test closure in');
+    }
+
+    public function testQuery_whereLike()
+    {
+        $compiler = new MySqlCompiler;
+
+        $q = new Query('t2');
+        $fn = function($q) { return $q->from('tbl'); };
+        
+        // Test various modifier
+        $query = new Query('t1');
+        $query->whereLike('c1', 'asdf');
+        $query->whereNotLike('c1', 'asdf%');
+        $query->orWhereLike('c1', '%asdf');
+        $query->orWhereNotLike('c1', '%asdf%');
+
+        $expected = "SELECT * FROM `t1` WHERE `c1` LIKE 'asdf' AND `c1` NOT LIKE 'asdf%' OR `c1` LIKE '%asdf' OR `c1` NOT LIKE '%asdf%'";
+        $compiled = $compiler->compileQuery($query);
+        $this->assertEquals($expected, $compiled, 'Test various modifier');
+        
+        $query = new Query('t1');
+        $query->whereLike(1, 'asdf');
+        $query->whereLike(1.1, 'asdf');
+        $query->whereLike(true, 'asdf');
+        $query->whereLike(null, 'asdf');
+        $query->whereLike(literal('asdf'), 'asdf');
+        $query->whereLike($q, 'asdf');
+        $query->whereLike($fn, 'asdf');
+
+        $expected = "SELECT * FROM `t1` WHERE 1 LIKE 'asdf' AND 1.1 LIKE 'asdf' AND TRUE LIKE 'asdf' AND NULL LIKE 'asdf' AND 'asdf' LIKE 'asdf' AND (SELECT * FROM `t2`) LIKE 'asdf' AND (SELECT * FROM `tbl`) LIKE 'asdf'";
+        $compiled = $compiler->compileQuery($query);
+        $this->assertEquals($expected, $compiled, 'Test literal like');
+        
+        $query = new Query('t1');
+        $query->whereLike('c1', 'asdf', true);
+
+        $expected = "SELECT * FROM `t1` WHERE `c1` LIKE BINARY 'asdf'";
+        $compiled = $compiler->compileQuery($query);
+        $this->assertEquals($expected, $compiled, 'Test case sensitive');
+        
+        $query = new Query('t1');
+        $query->whereLike('c1', 'asdf', false, '!');
+
+        $expected = "SELECT * FROM `t1` WHERE `c1` LIKE 'asdf' ESCAPE '!'";
+        $compiled = $compiler->compileQuery($query);
+        $this->assertEquals($expected, $compiled, 'Test escape');
+    }
+
+    public function testQuery_whereStarts()
+    {
+        $compiler = new MySqlCompiler;
+
+        $q = new Query('t2');
+        $fn = function($q) { return $q->from('tbl'); };
+        
+        // Test various modifier
+        $query = new Query('t1');
+        $query->whereStarts('c1', 'asdf');
+        $query->whereNotStarts('c1', 'asdf%');
+        $query->orWhereStarts('c1', '%asdf');
+        $query->orWhereNotStarts('c1', '%asdf%');
+
+        $expected = "SELECT * FROM `t1` WHERE `c1` LIKE 'asdf%' AND `c1` NOT LIKE 'asdf\%%' OR `c1` LIKE '\%asdf%' OR `c1` NOT LIKE '\%asdf\%%'";
+        $compiled = $compiler->compileQuery($query);
+        $this->assertEquals($expected, $compiled, 'Test various modifier');
+        
+        $query = new Query('t1');
+        $query->whereStarts(1, 'asdf');
+        $query->whereStarts(1.1, 'asdf');
+        $query->whereStarts(true, 'asdf');
+        $query->whereStarts(null, 'asdf');
+        $query->whereStarts(literal('asdf'), 'asdf');
+        $query->whereStarts($q, 'asdf');
+        $query->whereStarts($fn, 'asdf');
+
+        $expected = "SELECT * FROM `t1` WHERE 1 LIKE 'asdf%' AND 1.1 LIKE 'asdf%' AND TRUE LIKE 'asdf%' AND NULL LIKE 'asdf%' AND 'asdf' LIKE 'asdf%' AND (SELECT * FROM `t2`) LIKE 'asdf%' AND (SELECT * FROM `tbl`) LIKE 'asdf%'";
+        $compiled = $compiler->compileQuery($query);
+        $this->assertEquals($expected, $compiled, 'Test literal like');
+        
+        $query = new Query('t1');
+        $query->whereStarts('c1', 'asdf', true);
+
+        $expected = "SELECT * FROM `t1` WHERE `c1` LIKE BINARY 'asdf%'";
+        $compiled = $compiler->compileQuery($query);
+        $this->assertEquals($expected, $compiled, 'Test case sensitive');
+        
+        $query = new Query('t1');
+        $query->whereStarts('c1', 'asdf%', false, '!');
+
+        $expected = "SELECT * FROM `t1` WHERE `c1` LIKE 'asdf!%%' ESCAPE '!'";
+        $compiled = $compiler->compileQuery($query);
+        $this->assertEquals($expected, $compiled, 'Test escape');
+    }
+
+    public function testQuery_whereEnds()
+    {
+        $compiler = new MySqlCompiler;
+
+        $q = new Query('t2');
+        $fn = function($q) { return $q->from('tbl'); };
+        
+        // Test various modifier
+        $query = new Query('t1');
+        $query->whereEnds('c1', 'asdf');
+        $query->whereNotEnds('c1', 'asdf%');
+        $query->orWhereEnds('c1', '%asdf');
+        $query->orWhereNotEnds('c1', '%asdf%');
+
+        $expected = "SELECT * FROM `t1` WHERE `c1` LIKE '%asdf' AND `c1` NOT LIKE '%asdf\%' OR `c1` LIKE '%\%asdf' OR `c1` NOT LIKE '%\%asdf\%'";
+        $compiled = $compiler->compileQuery($query);
+        $this->assertEquals($expected, $compiled, 'Test various modifier');
+        
+        $query = new Query('t1');
+        $query->whereEnds(1, 'asdf');
+        $query->whereEnds(1.1, 'asdf');
+        $query->whereEnds(true, 'asdf');
+        $query->whereEnds(null, 'asdf');
+        $query->whereEnds(literal('asdf'), 'asdf');
+        $query->whereEnds($q, 'asdf');
+        $query->whereEnds($fn, 'asdf');
+
+        $expected = "SELECT * FROM `t1` WHERE 1 LIKE '%asdf' AND 1.1 LIKE '%asdf' AND TRUE LIKE '%asdf' AND NULL LIKE '%asdf' AND 'asdf' LIKE '%asdf' AND (SELECT * FROM `t2`) LIKE '%asdf' AND (SELECT * FROM `tbl`) LIKE '%asdf'";
+        $compiled = $compiler->compileQuery($query);
+        $this->assertEquals($expected, $compiled, 'Test literal like');
+        
+        $query = new Query('t1');
+        $query->whereEnds('c1', 'asdf', true);
+
+        $expected = "SELECT * FROM `t1` WHERE `c1` LIKE BINARY '%asdf'";
+        $compiled = $compiler->compileQuery($query);
+        $this->assertEquals($expected, $compiled, 'Test case sensitive');
+        
+        $query = new Query('t1');
+        $query->whereEnds('c1', '%asdf', false, '!');
+
+        $expected = "SELECT * FROM `t1` WHERE `c1` LIKE '%!%asdf' ESCAPE '!'";
+        $compiled = $compiler->compileQuery($query);
+        $this->assertEquals($expected, $compiled, 'Test escape');
+    }
+
+    public function testQuery_whereContains()
+    {
+        $compiler = new MySqlCompiler;
+
+        $q = new Query('t2');
+        $fn = function($q) { return $q->from('tbl'); };
+        
+        // Test various modifier
+        $query = new Query('t1');
+        $query->whereContains('c1', 'asdf');
+        $query->whereNotContains('c1', 'asdf%');
+        $query->orWhereContains('c1', '%asdf');
+        $query->orWhereNotContains('c1', '%asdf%');
+
+        $expected = "SELECT * FROM `t1` WHERE `c1` LIKE '%asdf%' AND `c1` NOT LIKE '%asdf\%%' OR `c1` LIKE '%\%asdf%' OR `c1` NOT LIKE '%\%asdf\%%'";
+        $compiled = $compiler->compileQuery($query);
+        $this->assertEquals($expected, $compiled, 'Test various modifier');
+        
+        $query = new Query('t1');
+        $query->whereContains(1, 'asdf');
+        $query->whereContains(1.1, 'asdf');
+        $query->whereContains(true, 'asdf');
+        $query->whereContains(null, 'asdf');
+        $query->whereContains(literal('asdf'), 'asdf');
+        $query->whereContains($q, 'asdf');
+        $query->whereContains($fn, 'asdf');
+
+        $expected = "SELECT * FROM `t1` WHERE 1 LIKE '%asdf%' AND 1.1 LIKE '%asdf%' AND TRUE LIKE '%asdf%' AND NULL LIKE '%asdf%' AND 'asdf' LIKE '%asdf%' AND (SELECT * FROM `t2`) LIKE '%asdf%' AND (SELECT * FROM `tbl`) LIKE '%asdf%'";
+        $compiled = $compiler->compileQuery($query);
+        $this->assertEquals($expected, $compiled, 'Test literal like');
+        
+        $query = new Query('t1');
+        $query->whereContains('c1', 'asdf', true);
+
+        $expected = "SELECT * FROM `t1` WHERE `c1` LIKE BINARY '%asdf%'";
+        $compiled = $compiler->compileQuery($query);
+        $this->assertEquals($expected, $compiled, 'Test case sensitive');
+        
+        $query = new Query('t1');
+        $query->whereContains('c1', '%asdf%', false, '!');
+
+        $expected = "SELECT * FROM `t1` WHERE `c1` LIKE '%!%asdf!%%' ESCAPE '!'";
+        $compiled = $compiler->compileQuery($query);
+        $this->assertEquals($expected, $compiled, 'Test escape');
+    }
+
+    public function testInsertQuery()
+    {
+        $compiler = new MySqlCompiler;
+
+        $query = new Query('t1');
+        $insertQuery = $query->insert([
+            'col1' => 1,
+            'col2' => 1.01,
+            'col3' => null,
+            'col4' => false,
+            'col5' => 'string',
+        ]);
+
+        $expected = "INSERT INTO `t1` (`col1`, `col2`, `col3`, `col4`, `col5`) VALUES (1, 1.01, NULL, FALSE, 'string')";
+        $compiled = $compiler->compileInsertQuery($insertQuery);
+        $this->assertEquals($expected, $compiled);
+
+        $query = new Query('t1');
+        $insertQuery = $query->insert(
+            ['col1', 'col2', 'col3', 'col4', 'col5'],
+            [
+                [1, 1.01, NULL, FALSE, 'string'],
+                [1, 1.01, NULL, FALSE, 'string'],
+                [1, 1.01, NULL, FALSE, 'string'],
+            ]
+        );
+
+        $expected = "INSERT INTO `t1` (`col1`, `col2`, `col3`, `col4`, `col5`) VALUES (1, 1.01, NULL, FALSE, 'string'), (1, 1.01, NULL, FALSE, 'string'), (1, 1.01, NULL, FALSE, 'string')";
+        $compiled = $compiler->compileInsertQuery($insertQuery);
+        $this->assertEquals($expected, $compiled);
+
+        $query = new Query('t1');
+        $insertQuery = $query->insert(
+            [
+                ['col1' => 1, 'col2' => 1.01, 'col3' => NULL, 'col4' => FALSE, 'col5' => 'string'],
+                ['col1' => 1, 'col2' => 1.01, 'col3' => NULL, 'col4' => FALSE, 'col5' => 'string'],
+                ['col1' => 1, 'col2' => 1.01, 'col3' => NULL, 'col4' => FALSE, 'col5' => 'string'],
+            ]
+        );
+
+        $expected = "INSERT INTO `t1` (`col1`, `col2`, `col3`, `col4`, `col5`) VALUES (1, 1.01, NULL, FALSE, 'string'), (1, 1.01, NULL, FALSE, 'string'), (1, 1.01, NULL, FALSE, 'string')";
+        $compiled = $compiler->compileInsertQuery($insertQuery);
+        $this->assertEquals($expected, $compiled);
+    }
+
+    public function testInsertQuery_fromQuery()
+    {
+        $compiler = new MySqlCompiler;
+        $q = new Query('t2');
+
+        $query = new Query('t1');
+        $insertQuery = $query->insertQuery($q);
+
+        $expected = "INSERT INTO `t1` SELECT * FROM `t2`";
+        $compiled = $compiler->compileInsertQuery($insertQuery);
+        $this->assertEquals($expected, $compiled);
+
+        $query = new Query('t1');
+        $insertQuery = $query->insertQuery($q, ['c1', 'c2', 'c3']);
+
+        $expected = "INSERT INTO `t1` (`c1`, `c2`, `c3`) SELECT * FROM `t2`";
+        $compiled = $compiler->compileInsertQuery($insertQuery);
+        $this->assertEquals($expected, $compiled);
+    }
+
+    public function testUpdateQuery()
+    {
+        $compiler = new MySqlCompiler;
+        $q = new Query('t2');
+
+        $query = new Query('t1');
+        $updateQuery = $query->update([
+            'col1' => 'str',
+            'col2' => 1,
+            'col3' => 1.1,
+            'col4' => true,
+            'col5' => null,
+        ]);
+
+        $expected = "UPDATE `t1` SET `col1` = 'str', `col2` = 1, `col3` = 1.1, `col4` = TRUE, `col5` = NULL";
+        $compiled = $compiler->compileUpdateQuery($updateQuery);
+        $this->assertEquals($expected, $compiled);
+
+        $query = new Query('t1');
+        $updateQuery = $query->update((object) [
+            'col1' => 'str',
+            'col2' => 1,
+            'col3' => 1.1,
+            'col4' => true,
+            'col5' => null,
+        ]);
+
+        $expected = "UPDATE `t1` SET `col1` = 'str', `col2` = 1, `col3` = 1.1, `col4` = TRUE, `col5` = NULL";
+        $compiled = $compiler->compileUpdateQuery($updateQuery);
+        $this->assertEquals($expected, $compiled);
+
+        $query = new Query('t1');
+        $updateQuery = $query->where('col1', 'str')->limit(1)->update([
+            'col1' => 'str',
+            'col2' => 1,
+            'col3' => 1.1,
+            'col4' => true,
+            'col5' => null,
+        ]);
+
+        $expected = "UPDATE `t1` SET `col1` = 'str', `col2` = 1, `col3` = 1.1, `col4` = TRUE, `col5` = NULL WHERE `col1` = 'str' LIMIT 1";
+        $compiled = $compiler->compileUpdateQuery($updateQuery);
+        $this->assertEquals($expected, $compiled);
+    }
+
+    public function testDeleteQuery()
+    {
+        
+        $compiler = new MySqlCompiler;
+        $q = new Query('t2');
+
+        $query = new Query('t1');
+        $deleteQuery = $query->delete();
+
+        $expected = "DELETE FROM `t1`";
+        $compiled = $compiler->compileDeleteQuery($deleteQuery);
+        $this->assertEquals($expected, $compiled);
+
+        $query = new Query('t1');
+        $deleteQuery = $query->delete()->where('col1', 'str')->limit(1);
+
+        $expected = "DELETE FROM `t1` WHERE `col1` = 'str' LIMIT 1";
+        $compiled = $compiler->compileDeleteQuery($deleteQuery);
+        $this->assertEquals($expected, $compiled);
+    }
+
+    public function testQuery_combine()
+    {
+        $compiler = new MySqlCompiler;
+        $q = new Query('t2');
+        $fn = function($q) { return $q->from('tbl'); };
+
+        $query = new Query('t1');
+        $query->union($q);
+        $query->unionAll($fn);
+        $query->except($q);
+        $query->exceptAll($fn);
+        $query->intersect($q);
+        $query->intersectAll($fn);
+
+        $compiled = $compiler->compileQuery($query);
+        $expected = 'SELECT * FROM `t1` UNION SELECT * FROM `t2` UNION ALL SELECT * FROM `tbl` EXCEPT SELECT * FROM `t2` EXCEPT ALL SELECT * FROM `tbl` INTERSECT SELECT * FROM `t2` INTERSECT ALL SELECT * FROM `tbl`';
+        $this->assertEquals($expected, $compiled);
+    }
+
+    public function testQuery_cte()
+    {
+        $compiler = new MySqlCompiler;
+        $q = new Query('t2');
+        $fn = function($q) { return $q->from('tbl'); };
+
+        $query = new Query('t1');
+        $query->with($q, '_cte1_');
+        $query->with($fn, '_cte2_');
+        $query->with($q->alias('_cte3_'));
+
+        $compiled = $compiler->compileQuery($query);
+        $expected = 'WITH _cte1_ AS (SELECT * FROM `t2`), _cte2_ AS (SELECT * FROM `tbl`), _cte3_ AS (SELECT * FROM `t2`) SELECT * FROM `t1`';
         $this->assertEquals($expected, $compiled);
     }
 }
