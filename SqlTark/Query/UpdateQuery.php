@@ -11,10 +11,12 @@ use SqlTark\Helper;
 use SqlTark\Query\Interfaces\ConditionInterface;
 use SqlTark\Query\Traits\BasicFromTrait;
 use SqlTark\Query\Traits\ConditionTrait;
+use SqlTark\Query\Traits\OrderTrait;
+use SqlTark\Query\Traits\PagingTrait;
 
 class UpdateQuery extends BaseQuery implements ConditionInterface
 {
-    use BasicFromTrait, ConditionTrait;
+    use BasicFromTrait, ConditionTrait, PagingTrait, OrderTrait;
 
     /**
      * @var int $method
