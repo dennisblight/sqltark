@@ -138,6 +138,25 @@ abstract class BaseQuery implements QueryInterface
     }
 
     /**
+     * @return $this Self object
+     */
+    public function clearComponents(int $componentType, int $engineCode = 0)
+    {
+        $engineCode = $engineCode ?: $this->engineScope;
+
+        if(!is_null($this->components))
+        {
+            foreach ($this->components as $value) {
+                if ($value->getComponentType() == $componentType && $value->getEngine() == $engineCode) {
+                    $this->components->detach($value);
+                }
+            }
+        }
+
+        return $this;
+    }
+
+    /**
      * @return AbstractComponent[]
      */
     public function getComponents(int $componentType = 0, int $engineCode = 0): array
