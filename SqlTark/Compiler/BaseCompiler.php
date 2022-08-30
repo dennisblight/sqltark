@@ -13,6 +13,8 @@ use SqlTark\Component\AbstractJoin;
 use SqlTark\Component\AdHocTableFromClause;
 use SqlTark\Component\BetweenCondition;
 use SqlTark\Component\ColumnClause;
+use SqlTark\Component\CombineClause;
+use SqlTark\Component\CombineType;
 use SqlTark\Component\CompareClause;
 use SqlTark\Component\ComponentType;
 use SqlTark\Component\ExistsCondition;
@@ -20,6 +22,7 @@ use SqlTark\Component\FromClause;
 use SqlTark\Component\GroupCondition;
 use SqlTark\Component\InCondition;
 use SqlTark\Component\InsertClause;
+use SqlTark\Component\InsertQueryClause;
 use SqlTark\Component\JoinClause;
 use SqlTark\Component\JoinType;
 use SqlTark\Component\LikeCondition;
@@ -332,10 +335,11 @@ abstract class BaseCompiler
                     $operator .= ' BINARY';
                 }
 
-                if($escape && $condition->getType() != LikeType::Like) {
+                if($condition->getType() != LikeType::Like) {
+                    $esc = $escape ?? '\\';
                     $value = str_replace(
-                        [$escape, '%', '_'],
-                        [$escape . $escape, $escape . '%', $escape . '_'],
+                        [$esc, '%', '_'],
+                        [$esc . $esc, $esc . '%', $esc . '_'],
                         $value
                     );
                 }
@@ -351,8 +355,9 @@ abstract class BaseCompiler
                         $value = "%$value";
                         break;
                 }
-
-                $value = $this->quote($value);
+                
+                $extraEscape = $condition->getType() != LikeType::Like && (empty($escape) || $escape == '\\');
+                $value = $this->quote($value, $extraEscape);
 
                 $resolvedCondition = "$resolvedColumn $operator $value";
                 if ($escape) {
@@ -470,6 +475,23 @@ abstract class BaseCompiler
 
                 $first = false;
             }
+        }
+        elseif($values instanceof InsertQueryClause) {
+            $columns = $values->getColumns();
+            if(!empty($columns)) {
+                $result .= '(';
+                foreach($columns as $index => $column) {
+                    if($index > 0) {
+                        $result .= ', ';
+                    }
+
+                    $result .= $this->wrapIdentifier($column);
+                }
+                $result .= ') ';
+            }
+
+            $query = $values->getQuery();
+            $result .= $this->compileQuery($query);
         }
 
         return $result;
@@ -635,6 +657,7 @@ abstract class BaseCompiler
 
     public function compileQuery(Query $query): ?string
     {
+        $cte = [];
         $selects = [];
         $from = null;
         $joins = [];
@@ -642,6 +665,7 @@ abstract class BaseCompiler
         $groupBy = [];
         $havings = [];
         $orderBy = [];
+        $combines = [];
         $limit = null;
         $offset = null;
 
@@ -674,10 +698,23 @@ abstract class BaseCompiler
                 case ComponentType::Offset:
                     $offset = $component;
                     break;
+                case ComponentType::Combine:
+                    $combines[] = $component;
+                    break;
+                case ComponentType::CTE:
+                    $cte[] = $component;
+                    break;
             }
         }
 
-        $result = $this->compileSelect($selects, $query->isDistict());
+        $result = '';
+
+        $resolvedCte = $this->compileCte($cte);
+        if($resolvedCte) {
+            $result .= $resolvedCte . ' ';
+        }
+
+        $result .= $this->compileSelect($selects, $query->isDistict());
 
         $resolvedFrom = $this->compileFrom($from);
         if($resolvedFrom) {
@@ -712,6 +749,51 @@ abstract class BaseCompiler
         $resolvedPaging = $this->compilePaging($limit, $offset);
         if($resolvedPaging) {
             $result .= ' ' . $resolvedPaging;
+        }
+
+        $resolvedCombine = $this->compileCombine($combines);
+        if($resolvedCombine) {
+            $result .= ' ' . $resolvedCombine;
+        }
+
+        return $result;
+    }
+
+    /**
+     * @param FromClause[] $tables
+     */
+    public function compileCte(iterable $tables)
+    {
+        $result = null;
+
+        foreach($tables as $index => $table) {
+            if($index > 0) $result .= ', ';
+            else $result .= 'WITH ';
+
+            $query = $table->getTable();
+            $alias = $table->getAlias();
+            $result .= $alias . ' AS (' . $this->compileQuery($query) . ')';
+        }
+
+        return $result;
+    }
+
+    /**
+     * @param CombineClause[] $combines
+     */
+    public function compileCombine(iterable $combines)
+    {
+        $result = null;
+
+        foreach($combines as $index => $combine) {
+            if($index > 0) $result .= ' ';
+
+            $result .= CombineType::syntaxOf($combine->getOperation());
+            if($combine->isAll()) {
+                $result .= ' ALL';
+            }
+
+            $result .= ' ' . $this->compileQuery($combine->getQuery());
         }
 
         return $result;
@@ -817,6 +899,10 @@ abstract class BaseCompiler
 
     public function compileVariable(Variable $variable): ?string
     {
+        if(is_null($variable->getName())) {
+            return $this->wrapFunction(static::ParameterPlaceholder, $variable->getWrap());
+        }
+
         $result = trim($variable->getName());
 
         if (isset($result[0]) && $result[0] != static::VariablePrefix) {
@@ -873,7 +959,7 @@ abstract class BaseCompiler
     /**
      * @param \DateTime|string $value
      */
-    public abstract function quote($value): ?string;
+    public abstract function quote($value, bool $quoteLike = false): ?string;
 
     protected function wrapFunction(string $value, ?string $wrapper): ?string
     {
