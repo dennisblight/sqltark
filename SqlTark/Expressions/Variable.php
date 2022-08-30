@@ -7,11 +7,11 @@ namespace SqlTark\Expressions;
 class Variable extends BaseExpression
 {
     /**
-     * @var string
+     * @var ?string
      */
     protected $name;
 
-    public function getName(): string
+    public function getName(): ?string
     {
         return $this->name;
     }
@@ -21,7 +21,7 @@ class Variable extends BaseExpression
         $this->name = $value;
     }
 
-    public function __construct(string $name)
+    public function __construct(?string $name = null)
     {
         $this->name = $name;
     }

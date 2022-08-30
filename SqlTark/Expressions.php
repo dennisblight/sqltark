@@ -21,7 +21,7 @@ final class Expressions
         return $result->wrap($wrap);
     }
 
-    public static function variable(string $name, ?string $wrap = null): Variable
+    public static function variable(?string $name = null, ?string $wrap = null): Variable
     {
         $result = new Variable($name);
         return $result->wrap($wrap);
@@ -53,13 +53,13 @@ function column(string $name, ?string $wrap = null): Column
     return $result->wrap($wrap);
 }
 
-function variable(string $name, ?string $wrap = null): Variable
+function variable(?string $name = null, ?string $wrap = null): Variable
 {
     $result = new Variable($name);
     return $result->wrap($wrap);
 }
 
-function raw(string $expression): Raw
+function raw(string $expression, ?iterable $bindings = []): Raw
 {
-    return new Raw($expression);
+    return new Raw($expression, $bindings);
 }
