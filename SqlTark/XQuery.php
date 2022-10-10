@@ -38,18 +38,13 @@ class XQuery extends Query
     private $transactionCount = 0;
 
     /**
-     * @var $logger
+     * @var $onExecuteCallback
      */
-    private $logger;
+    private $onExecuteCallback;
 
-    public function getLogger()
+    public function onExecute(callable $onExecuteCallback)
     {
-        return $this->logger;
-    }
-
-    public function setLogger($logger)
-    {
-        $this->logger = $logger;
+        $this->onExecuteCallback = $onExecuteCallback;
     }
 
     /**
@@ -115,13 +110,18 @@ class XQuery extends Query
         {
             $statement = $this->prepare($sql);
             $statement->execute();
-            $this->log($sql, $statement->errorInfo());
+            $this->triggerOnExecute($sql, $statement->errorInfo(), $statement);
 
             return $statement;
         }
         catch(\PDOException $ex)
         {
-            $this->log($sql);
+            if(isset($statement)) {
+                $this->triggerOnExecute($sql, $statement->errorInfo(), $statement);
+            }
+            else {
+                $this->triggerOnExecute($sql);
+            }
             throw $ex;
         }
     }
@@ -276,14 +276,10 @@ class XQuery extends Query
         return $this->connection->getPDO()->rollBack();
     }
 
-    private function log(string $sql, ?array $errorInfo = null)
+    private function triggerOnExecute(string $sql, ?array $errorInfo = null, ?PDOStatement $statement = null)
     {
-        if(!is_null($this->logger)) {
-            $this->logger->log([
-                'sql'        => $sql,
-                'errorInfo'  => $errorInfo,
-                'connection' => $this->connection->getConfig(),
-            ]);
+        if(is_callable($this->onExecuteCallback)) {
+            call_user_func_array($this->onExecuteCallback, [$sql, $errorInfo, $statement]);
         }
     }
 }
