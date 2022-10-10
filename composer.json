@@ -1,6 +1,6 @@
 {
     "name": "dennisblight/sqltark",
-    "version": "v0.9.1",
+    "version": "v0.9.11",
     "description": "SQL Query Builder for PHP",
     "type": "library",
     "keywords": ["database", "query", "query builder"],
