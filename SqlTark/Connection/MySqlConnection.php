@@ -4,8 +4,6 @@ declare(strict_types=1);
 
 namespace SqlTark\Connection;
 
-use ArrayAccess;
-use InvalidArgumentException;
 use PDO;
 
 class MySqlConnection extends AbstractConnection
@@ -13,7 +11,7 @@ class MySqlConnection extends AbstractConnection
     /** @var PDO $pdo */
     protected $pdo = null;
 
-    protected const Driver = 'mysql';
+    protected static $Driver = 'mysql';
 
     protected $host       = 'localhost';
     protected $port       = 3306;

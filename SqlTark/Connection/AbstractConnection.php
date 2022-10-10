@@ -13,7 +13,7 @@ abstract class AbstractConnection
     /** @var PDO $pdo */
     protected $pdo = null;
 
-    protected const Driver = '';
+    protected static $Driver = '';
 
     protected $host       = 'localhost';
     protected $port       = null;
@@ -25,8 +25,21 @@ abstract class AbstractConnection
     protected $attributes = [];
 
     protected $fetchMode = PDO::FETCH_OBJ;
-    protected $fetchClassName = null;
-    protected $fetchCallback = null;
+
+    public function getConfig()
+    {
+        return [
+            'driver' => static::$Driver,
+            'host' => $this->host,
+            'port' => $this->port,
+            'username' => $this->username,
+            'password' => $this->password,
+            'database' => $this->database,
+            'charset' => $this->charset,
+            'collation' => $this->collation,
+            'attributes' => $this->attributes,
+        ];
+    }
 
     public function getPDO()
     {
@@ -38,8 +51,8 @@ abstract class AbstractConnection
      */
     public function __construct($config = [])
     {
-        if(!in_array(static::Driver, PDO::getAvailableDrivers(), true)) {
-            $driver = static::Driver;
+        if (!in_array(static::$Driver, PDO::getAvailableDrivers(), true)) {
+            $driver = static::$Driver;
             throw new InvalidArgumentException(
                 "PDO driver '{$driver}' not available"
             );
@@ -53,38 +66,31 @@ abstract class AbstractConnection
      */
     protected function hydrate($config)
     {
-        if(!empty($config['host']))
-        {
+        if (!empty($config['host'])) {
             $this->host = $config['host'];
         }
 
-        if(!empty($config['port']))
-        {
+        if (!empty($config['port'])) {
             $this->port = (int) $config['port'];
         }
 
-        if(!empty($config['username']))
-        {
+        if (!empty($config['username'])) {
             $this->username = $config['username'];
         }
 
-        if(!empty($config['password']))
-        {
+        if (!empty($config['password'])) {
             $this->password = $config['password'];
         }
 
-        if(!empty($config['database']))
-        {
+        if (!empty($config['database'])) {
             $this->database = $config['database'];
         }
 
-        if(!empty($config['charset']))
-        {
+        if (!empty($config['charset'])) {
             $this->charset = $config['charset'];
         }
 
-        if(!empty($config['collation']))
-        {
+        if (!empty($config['collation'])) {
             $this->collation = $config['collation'];
         }
     }
@@ -103,7 +109,7 @@ abstract class AbstractConnection
         $this->pdo = new PDO($dsn, $this->username, $this->password);
         $this->pdo->setAttribute(PDO::ATTR_DEFAULT_FETCH_MODE, $this->fetchMode);
         $this->pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
-        foreach($this->attributes as $key => $value) {
+        foreach ($this->attributes as $key => $value) {
             $this->pdo->setAttribute($key, $value);
         }
         $this->onConnected();
@@ -111,33 +117,5 @@ abstract class AbstractConnection
         return $this->pdo;
     }
 
-    protected function onConnected()
-    {
-        // $this->pdo->exec("SET NAMES '$this->charset' COLLATE '$this->collation'");
-        // $this->pdo->exec("SET CHARACTER SET '$this->charset'");
-    }
-
-    // public function getFetchMode(): int
-    // {
-    //     return $this->fetchMode;
-    // }
-
-    // /**
-    //  * @return $this Self object
-    //  */
-    // public function setFetchMode(int $fetchMode = PDO::FETCH_OBJ)
-    // {
-    //     $this->fetchMode = $fetchMode;
-    //     return $this;
-    // }
-
-    // /**
-    //  * @return $this Self object
-    //  */
-    // public function setFetchClass(string $className)
-    // {
-    //     $this->fetchMode = PDO::FETCH_CLASS;
-    //     $this->fetchClassName = $className;
-    //     return $this;
-    // }
+    protected function onConnected() { }
 }

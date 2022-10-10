@@ -4,16 +4,16 @@ declare(strict_types=1);
 
 namespace SqlTark;
 
-use InvalidArgumentException;
 use PDOStatement;
 use SqlTark\Query\Query;
+use InvalidArgumentException;
+use SqlTark\Query\DeleteQuery;
 use SqlTark\Query\InsertQuery;
+use SqlTark\Query\UpdateQuery;
 use SqlTark\Compiler\BaseCompiler;
 use SqlTark\Component\ComponentType;
 use SqlTark\Connection\AbstractConnection;
-use SqlTark\Query\DeleteQuery;
 use SqlTark\Query\Interfaces\QueryInterface;
-use SqlTark\Query\UpdateQuery;
 
 class XQuery extends Query
 {
@@ -26,6 +26,31 @@ class XQuery extends Query
      * @var BaseCompiler $compiler
      */
     private $compiler;
+
+    /**
+     * @var bool $resetOnExecute
+     */
+    private $resetOnExecute = true;
+
+    /**
+     * @var int $transactionCount
+     */
+    private $transactionCount = 0;
+
+    /**
+     * @var $logger
+     */
+    private $logger;
+
+    public function getLogger()
+    {
+        return $this->logger;
+    }
+
+    public function setLogger($logger)
+    {
+        $this->logger = $logger;
+    }
 
     /**
      * @return AbstractConnection
@@ -43,10 +68,30 @@ class XQuery extends Query
         return $this->compiler;
     }
 
+    /**
+     * @return $this Self object
+     */
+    public function resetOnExecute(bool $value = true)
+    {
+        $this->resetOnExecute = $value;
+        return $this;
+    }
+
     public function __construct($connection, $compiler)
     {
         $this->connection = $connection;
         $this->compiler = $compiler;
+    }
+
+    /**
+     * @return $this Self object
+     */
+    public function reset()
+    {
+        if(!is_null($this->components)) {
+            $this->components->removeAll($this->components);
+        }
+        return $this;
     }
 
     /**
@@ -55,6 +100,9 @@ class XQuery extends Query
     public function prepare(string $sql)
     {
         $pdo = $this->connection->getPDO();
+        if($this->resetOnExecute) {
+            $this->reset();
+        }
         return $pdo->prepare($sql);
     }
 
@@ -63,9 +111,19 @@ class XQuery extends Query
      */
     public function execute(string $sql)
     {
-        $statement = $this->prepare($sql);
-        $statement->execute();
-        return $statement;
+        try
+        {
+            $statement = $this->prepare($sql);
+            $statement->execute();
+            $this->log($sql, $statement->errorInfo());
+
+            return $statement;
+        }
+        catch(\PDOException $ex)
+        {
+            $this->log($sql);
+            throw $ex;
+        }
     }
 
     /**
@@ -130,11 +188,13 @@ class XQuery extends Query
         $statement = $this->executeQuery($this);
         $result = $statement->fetch();
         $statement->closeCursor();
-
-        if (empty(($limitComponent))) {
-            $this->clearComponents(ComponentType::Limit);
-        } else {
-            $this->addOrReplaceComponent(ComponentType::Limit, $limitComponent);
+        
+        if(!$this->resetOnExecute) {
+            if(empty($limitComponent)) {
+                $this->clearComponents(ComponentType::Limit);
+            } else {
+                $this->addOrReplaceComponent(ComponentType::Limit, $limitComponent);
+            }
         }
 
         return $result;
@@ -159,13 +219,71 @@ class XQuery extends Query
         $statement = $this->executeQuery($this);
         $result = $statement->fetchColumn($columnIndex);
         $statement->closeCursor();
-
-        if (empty(($limitComponent))) {
-            $this->clearComponents(ComponentType::Limit);
-        } else {
-            $this->addOrReplaceComponent(ComponentType::Limit, $limitComponent);
+        
+        if(!$this->resetOnExecute) {
+            if(empty($limitComponent)) {
+                $this->clearComponents(ComponentType::Limit);
+            } else {
+                $this->addOrReplaceComponent(ComponentType::Limit, $limitComponent);
+            }
         }
 
         return $result;
+    }
+
+    public function lastInsertId(?string $name)
+    {
+        return $this->connection->getPDO()->lastInsertId($name);
+    }
+
+    /**
+     * @return bool|PDOStatement
+     */
+    public function transaction()
+    {
+        if($this->transactionCount++ === 0) {
+            return $this->connection->getPDO()->beginTransaction();
+        }
+
+        $this->execute("SAVEPOINT __trx{$this->transactionCount}__");
+        return $this->transactionCount >= 0;
+    }
+
+    /**
+     * @return bool|PDOStatement
+     */
+    public function commit()
+    {
+        if(--$this->transactionCount === 0) {
+            return $this->connection->getPDO()->commit();
+        }
+
+        return $this->transactionCount >= 0;
+    }
+
+    /**
+     * @return bool|PDOStatement
+     */
+    public function rollback()
+    {
+        if($this->transactionCount > 1) {
+            $this->execute("ROLLBACK TO __trx{$this->transactionCount}__");
+            $this->transactionCount--;
+            return true;
+        }
+
+        $this->transactionCount--;
+        return $this->connection->getPDO()->rollBack();
+    }
+
+    private function log(string $sql, ?array $errorInfo = null)
+    {
+        if(!is_null($this->logger)) {
+            $this->logger->log([
+                'sql'        => $sql,
+                'errorInfo'  => $errorInfo,
+                'connection' => $this->connection->getConfig(),
+            ]);
+        }
     }
 }
