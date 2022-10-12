@@ -72,7 +72,7 @@ class XQuery extends Query
         return $this;
     }
 
-    public function __construct($connection, $compiler)
+    public function __construct(?AbstractConnection $connection = null, ?BaseCompiler $compiler = null)
     {
         $this->connection = $connection;
         $this->compiler = $compiler;
@@ -276,10 +276,34 @@ class XQuery extends Query
         return $this->connection->getPDO()->rollBack();
     }
 
+    /**
+     * @return XQuery
+     */
+    public function newQuery()
+    {
+        $self = new XQuery($this->connection, $this->compiler);
+        $self->onExecuteCallback = $this->onExecuteCallback;
+        return $self;
+    }
+
+    /**
+     * @return static Clone of current object
+     */
+    public function __clone()
+    {
+        /** @var static $clone */
+        $self = parent::__clone();
+        $self->onExecuteCallback = $this->onExecuteCallback;
+        $self->connection = $this->connection;
+        $self->compiler = $this->compiler;
+
+        return $self;
+    }
+
     private function triggerOnExecute(string $sql, ?array $errorInfo = null, ?PDOStatement $statement = null)
     {
         if(is_callable($this->onExecuteCallback)) {
-            call_user_func_array($this->onExecuteCallback, [$sql, $errorInfo, $statement]);
+            return call_user_func_array($this->onExecuteCallback, [$sql, $errorInfo, $statement]);
         }
     }
 }

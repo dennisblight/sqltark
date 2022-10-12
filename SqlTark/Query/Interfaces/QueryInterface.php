@@ -4,10 +4,8 @@ declare(strict_types=1);
 
 namespace SqlTark\Query\Interfaces;
 
-use SqlTark\Query\Query;
 use SqlTark\Query\BaseQuery;
 use SqlTark\Component\AbstractComponent;
-use SqlTark\Component\ComponentType;
 
 interface QueryInterface
 {
@@ -25,15 +23,13 @@ interface QueryInterface
 
     /**
      * Create new ```Query``` object
-     * @return Query New query
      */
-    public function newQuery(): Query;
+    public function newQuery();
 
     /**
      * Create new ```Query``` object then set parent as ```this``` object
-     * @return Query New query
      */
-    public function newChild(): Query;
+    public function newChild();
 
     /**
      * Add new component

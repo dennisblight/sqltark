@@ -82,12 +82,18 @@ abstract class BaseQuery implements QueryInterface
         return $this;
     }
 
-    public function newQuery(): Query
+    /**
+     * @return Query
+     */
+    public function newQuery()
     {
         return new Query;
     }
 
-    public function newChild(): Query
+    /**
+     * @return Query
+     */
+    public function newChild()
     {
         return $this->newQuery()->setParent($this)->setEngineScope($this->engineScope);
     }

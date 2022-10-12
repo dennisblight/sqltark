@@ -11,7 +11,7 @@ class MySqlConnection extends AbstractConnection
     /** @var PDO $pdo */
     protected $pdo = null;
 
-    protected static $Driver = 'mysql';
+    protected const Driver = 'mysql';
 
     protected $host       = 'localhost';
     protected $port       = 3306;
