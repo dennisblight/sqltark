@@ -51,8 +51,8 @@ abstract class AbstractConnection
      */
     public function __construct($config = [])
     {
-        if (!in_array(static::$Driver, PDO::getAvailableDrivers(), true)) {
-            $driver = static::$Driver;
+        if (!in_array(static::Driver, PDO::getAvailableDrivers(), true)) {
+            $driver = static::Driver;
             throw new InvalidArgumentException(
                 "PDO driver '{$driver}' not available"
             );
