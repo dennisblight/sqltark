@@ -36,7 +36,6 @@ class InsertQuery extends BaseQuery
     {
         $self = new self;
         $self->components = $query->components;
-        $self->engineScope = $query->engineScope;
         return $self;
     }
 

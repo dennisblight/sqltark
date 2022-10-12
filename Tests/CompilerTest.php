@@ -5,9 +5,9 @@ declare(strict_types=1);
 use PHPUnit\Framework\TestCase;
 use SqlTark\Compiler\MySqlCompiler;
 use SqlTark\Query\Query;
+use SqlTark\Expressions;
 
 use function SqlTark\Expressions\column;
-use function SqlTark\Expressions\literal;
 
 final class CompilerTest extends TestCase
 {
@@ -112,7 +112,7 @@ final class CompilerTest extends TestCase
         $this->assertEquals($expected, $compiled);
 
         $query = new Query();
-        $query->select(literal('col1'), literal('col2'), literal('col3'));
+        $query->select(new Expressions\Literal('col1'), new Expressions\Literal('col2'), new Expressions\Literal('col3'));
         $expected = "SELECT 'col1', 'col2', 'col3'";
         $compiled = $compiler->compileQuery($query);
         $this->assertEquals($expected, $compiled);
@@ -266,17 +266,17 @@ final class CompilerTest extends TestCase
         $query->where(1, 'val');
         $query->where(1.01, 'val');
         $query->where(true, 'val');
-        $query->where(literal('val'), 'val');
+        $query->where(new Expressions\Literal('val'), 'val');
 
         $expected = "SELECT * FROM `t1` WHERE 1 = 'val' AND 1.01 = 'val' AND TRUE = 'val' AND 'val' = 'val'";
         $compiled = $compiler->compileQuery($query);
         $this->assertEquals($expected, $compiled, 'Test literal against literal');
 
         $query = new Query('t1');
-        $query->where(1, column('val'));
-        $query->where(1.01, column('val'));
-        $query->where(true, column('val'));
-        $query->where(literal('val'), column('t1.val'));
+        $query->where(1, new Expressions\Column('val'));
+        $query->where(1.01, new Expressions\Column('val'));
+        $query->where(true, new Expressions\Column('val'));
+        $query->where(new Expressions\Literal('val'), new Expressions\Column('t1.val'));
 
         $expected = "SELECT * FROM `t1` WHERE 1 = `val` AND 1.01 = `val` AND TRUE = `val` AND 'val' = `t1`.`val`";
         $compiled = $compiler->compileQuery($query);
@@ -346,9 +346,9 @@ final class CompilerTest extends TestCase
         $query = new Query('t1');
         $query->whereIn(1, [1, 2.02]);
         $query->whereIn(1.01, [true, null]);
-        $query->whereIn(true, ['5', column('x')]);
+        $query->whereIn(true, ['5', new Expressions\Column('x')]);
         $query->whereIn(null, $q);
-        $query->whereIn(literal('str'), $fn);
+        $query->whereIn(new Expressions\Literal('str'), $fn);
 
         $expected = "SELECT * FROM `t1` WHERE 1 IN (1, 2.02) AND 1.01 IN (TRUE, NULL) AND TRUE IN ('5', `x`) AND NULL IN (SELECT * FROM `t2`) AND 'str' IN (SELECT * FROM `tbl`)";
         $compiled = $compiler->compileQuery($query);
@@ -357,7 +357,7 @@ final class CompilerTest extends TestCase
         $query = new Query('t1');
         $query->whereIn($q, [1, 2.02]);
         $query->whereIn($q, [true, null]);
-        $query->whereIn($q, ['5', column('x')]);
+        $query->whereIn($q, ['5', new Expressions\Column('x')]);
         $query->whereIn($q, $q);
         $query->whereIn($q, $fn);
 
@@ -368,7 +368,7 @@ final class CompilerTest extends TestCase
         $query = new Query('t1');
         $query->whereIn($fn, [1, 2.02]);
         $query->whereIn($fn, [true, null]);
-        $query->whereIn($fn, ['5', column('x')]);
+        $query->whereIn($fn, ['5', new Expressions\Column('x')]);
         $query->whereIn($fn, $q);
         $query->whereIn($fn, $fn);
 
@@ -400,7 +400,7 @@ final class CompilerTest extends TestCase
         $query->whereLike(1.1, 'asdf');
         $query->whereLike(true, 'asdf');
         $query->whereLike(null, 'asdf');
-        $query->whereLike(literal('asdf'), 'asdf');
+        $query->whereLike(new Expressions\Literal('asdf'), 'asdf');
         $query->whereLike($q, 'asdf');
         $query->whereLike($fn, 'asdf');
 
@@ -446,7 +446,7 @@ final class CompilerTest extends TestCase
         $query->whereStarts(1.1, 'asdf');
         $query->whereStarts(true, 'asdf');
         $query->whereStarts(null, 'asdf');
-        $query->whereStarts(literal('asdf'), 'asdf');
+        $query->whereStarts(new Expressions\Literal('asdf'), 'asdf');
         $query->whereStarts($q, 'asdf');
         $query->whereStarts($fn, 'asdf');
 
@@ -492,7 +492,7 @@ final class CompilerTest extends TestCase
         $query->whereEnds(1.1, 'asdf');
         $query->whereEnds(true, 'asdf');
         $query->whereEnds(null, 'asdf');
-        $query->whereEnds(literal('asdf'), 'asdf');
+        $query->whereEnds(new Expressions\Literal('asdf'), 'asdf');
         $query->whereEnds($q, 'asdf');
         $query->whereEnds($fn, 'asdf');
 
@@ -538,7 +538,7 @@ final class CompilerTest extends TestCase
         $query->whereContains(1.1, 'asdf');
         $query->whereContains(true, 'asdf');
         $query->whereContains(null, 'asdf');
-        $query->whereContains(literal('asdf'), 'asdf');
+        $query->whereContains(new Expressions\Literal('asdf'), 'asdf');
         $query->whereContains($q, 'asdf');
         $query->whereContains($fn, 'asdf');
 

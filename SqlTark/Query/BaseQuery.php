@@ -6,7 +6,6 @@ namespace SqlTark\Query;
 
 use SplObjectStorage;
 use InvalidArgumentException;
-use SqlTark\Compiler\EngineType;
 use SqlTark\Component\AbstractComponent;
 use SqlTark\Query\Interfaces\QueryInterface;
 
@@ -26,11 +25,6 @@ abstract class BaseQuery implements QueryInterface
     protected $components = null;
 
     /**
-     * @var int $engineScope
-     */
-    protected $engineScope = 0;
-
-    /**
      * @var int $method
      */
     protected $method = MethodType::Select;
@@ -48,22 +42,6 @@ abstract class BaseQuery implements QueryInterface
     public function setMethod(int $value)
     {
         $this->method = $value;
-    }
-
-    public function getEngineScope(): int
-    {
-        return $this->engineScope;
-    }
-
-    public function setEngineScope(int $value)
-    {
-        $this->engineScope = $value;
-        return $this;
-    }
-
-    public function getEngineName(): ?string
-    {
-        return EngineType::nameOf($this->engineScope);
     }
 
     public function getParent(): BaseQuery
@@ -95,33 +73,29 @@ abstract class BaseQuery implements QueryInterface
      */
     public function newChild()
     {
-        return $this->newQuery()->setParent($this)->setEngineScope($this->engineScope);
+        return $this->newQuery()->setParent($this);
     }
 
-    public function addComponent(int $componentType, AbstractComponent $component, int $engineCode = 0): QueryInterface
+    public function addComponent(int $componentType, AbstractComponent $component): QueryInterface
     {
-        $engineCode = $engineCode ?: $this->engineScope;
-
         if (is_null($this->components)) {
             $this->components = new SplObjectStorage;
         }
 
-        $component->setEngine($engineCode)->setComponentType($componentType);
+        $component->setComponentType($componentType);
 
         $this->components->attach($component);
 
         return $this;
     }
 
-    public function addOrReplaceComponent(int $componentType, AbstractComponent $component, int $engineCode = 0): QueryInterface
+    public function addOrReplaceComponent(int $componentType, AbstractComponent $component): QueryInterface
     {
-        $engineCode = $engineCode ?: $this->engineScope;
-
         if (!is_null($this->components)) {
             /** @var ?AbstractComponent */
             $foundComponent = null;
             foreach ($this->components as $value) {
-                if ($value->getComponentType() == $componentType && $value->getEngine() == $engineCode) {
+                if ($value->getComponentType() == $componentType) {
                     if (!is_null($foundComponent)) {
                         throw new InvalidArgumentException("Sequence contains more than one matching element");
                     }
@@ -137,7 +111,7 @@ abstract class BaseQuery implements QueryInterface
             $this->components = new SplObjectStorage;
         }
 
-        $component->setEngine($engineCode)->setComponentType($componentType);
+        $component->setComponentType($componentType);
         $this->components->attach($component);
 
         return $this;
@@ -146,14 +120,12 @@ abstract class BaseQuery implements QueryInterface
     /**
      * @return $this Self object
      */
-    public function clearComponents(int $componentType, int $engineCode = 0)
+    public function clearComponents(int $componentType)
     {
-        $engineCode = $engineCode ?: $this->engineScope;
-
         if(!is_null($this->components))
         {
             foreach ($this->components as $value) {
-                if ($value->getComponentType() == $componentType && $value->getEngine() == $engineCode) {
+                if ($value->getComponentType() == $componentType) {
                     $this->components->detach($value);
                 }
             }
@@ -165,7 +137,7 @@ abstract class BaseQuery implements QueryInterface
     /**
      * @return AbstractComponent[]
      */
-    public function getComponents(int $componentType = 0, int $engineCode = 0): array
+    public function getComponents(int $componentType = 0): array
     {
         if (is_null($this->components)) {
             return [];
@@ -175,11 +147,9 @@ abstract class BaseQuery implements QueryInterface
             return iterator_to_array($this->components);
         }
 
-        $engineCode = $engineCode ?: $this->engineScope;
-
         $result = [];
         foreach ($this->components as $item) {
-            if (self::isValidComponent($item, $componentType, $engineCode)) {
+            if (self::isValidComponent($item, $componentType)) {
                 $result[] = $item;
             }
         }
@@ -187,39 +157,27 @@ abstract class BaseQuery implements QueryInterface
         return $result;
     }
 
-    public function getOneComponent(int $componentType, int $engineCode = 0): ?AbstractComponent
+    public function getOneComponent(int $componentType): ?AbstractComponent
     {
         if (is_null($this->components)) return null;
-
-        $engineCode = $engineCode ?: $this->engineScope;
 
         /** @var ?AbstractComponent */
         $anyComponent = null;
         foreach ($this->components as $item) {
-            if ($item->getComponentType() != $componentType) {
-                continue;
-            }
-
-            if ($item->getEngine() == $engineCode) {
+            if ($item->getComponentType() == $componentType) {
                 return $item;
-            }
-
-            if ($item->getEngine() == 0 && $engineCode == 0) {
-                $anyComponent = $item;
             }
         }
 
         return $anyComponent;
     }
 
-    public function hasComponent(int $componentType, int $engineCode = 0): bool
+    public function hasComponent(int $componentType): bool
     {
         if (is_null($this->components)) return false;
 
-        $engineCode = $engineCode ?: $this->engineScope;
-
         foreach ($this->components as $item) {
-            if (self::isValidComponent($item, $componentType, $engineCode)) {
+            if (self::isValidComponent($item, $componentType)) {
                 return true;
             }
         }
@@ -227,13 +185,9 @@ abstract class BaseQuery implements QueryInterface
         return false;
     }
 
-    private static function isValidComponent(AbstractComponent $component, int $componentType, int $engineCode): bool
+    private static function isValidComponent(AbstractComponent $component, int $componentType): bool
     {
-        return $component->getComponentType() == $componentType
-            && ($component->getEngine() == 0
-                || $engineCode == 0
-                || $engineCode == $component->getEngine()
-            );
+        return $component->getComponentType() == $componentType;
     }
 
     public function __clone()
@@ -256,20 +210,6 @@ abstract class BaseQuery implements QueryInterface
         }
 
         return $self;
-    }
-
-    /**
-     * @return $this Self object
-     */
-    public function for(int $engine, callable $callback): QueryInterface
-    {
-        $this->engineScope = $engine;
-
-        $result = $callback($this);
-
-        $this->engineScope = 0;
-
-        return $result;
     }
 
     /**

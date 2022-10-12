@@ -3,7 +3,6 @@
 declare(strict_types=1);
 
 use PHPUnit\Framework\TestCase;
-use PHPUnit\TextUI\Help;
 use SqlTark\Helper;
 
 final class HelperTest extends TestCase

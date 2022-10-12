@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace SqlTark\Component;
 
-use SqlTark\Compiler\EngineType;
 use SqlTark\Component\ComponentType;
 
 abstract class AbstractComponent
@@ -13,11 +12,6 @@ abstract class AbstractComponent
      * @var int $componentType
      */
     protected $componentType;
-
-    /**
-     * @var int $engine
-     */
-    protected $engine;
 
     public function getComponentType(): int
     {
@@ -38,25 +32,6 @@ abstract class AbstractComponent
         return $this;
     }
 
-    public function getEngine(): int
-    {
-        return $this->engine;
-    }
-
-    public function getEngineName(): ?string
-    {
-        return EngineType::nameOf($this->engine);
-    }
-
-    /**
-     * @return static Clone of current object
-     */
-    public function setEngine(int $value)
-    {
-        $this->engine = $value;
-        return $this;
-    }
-
     public function __clone()
     {
         return $this->clone();
@@ -70,7 +45,6 @@ abstract class AbstractComponent
         $self = new static();
 
         $self->componentType = $this->componentType;
-        $self->engine = $this->engine;
 
         return $self;
     }

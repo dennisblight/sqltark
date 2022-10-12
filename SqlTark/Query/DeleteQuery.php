@@ -34,7 +34,6 @@ class DeleteQuery extends BaseQuery implements ConditionInterface
     {
         $self = new self;
         $self->components = $query->components;
-        $self->engineScope = $query->engineScope;
         return $self;
     }
 }
