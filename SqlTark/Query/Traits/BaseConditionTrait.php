@@ -276,7 +276,7 @@ trait BaseConditionTrait
     {
         if (is_callable($group)) {
             $query = new Condition;
-            $query->setParent($this)->setEngineScope($this->getEngineScope());
+            $query->setParent($this);
             $group = $group($query);
 
             if (!($group instanceof Condition)) {

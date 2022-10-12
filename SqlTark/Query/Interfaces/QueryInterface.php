@@ -36,10 +36,9 @@ interface QueryInterface
      * 
      * @param int $componentType Component type from ```ComponentType``` enum class
      * @param AbstractComponent $component Component object
-     * @param int $engineCode Engine type from ```EngineType``` enum class
      * @return $this Self object
      */
-    public function addComponent(int $componentType, AbstractComponent $component, int $engineCode = 0): QueryInterface;
+    public function addComponent(int $componentType, AbstractComponent $component): QueryInterface;
 
     /**
      * Remove old component with specified ```componentType``` if exists then
@@ -47,48 +46,35 @@ interface QueryInterface
      * 
      * @param int $componentType Component type from ```ComponentType``` enum class
      * @param AbstractComponent $component Component object
-     * @param int $engineCode Engine type from ```EngineType``` enum class
      * @return $this Self object
      */
-    public function addOrReplaceComponent(int $componentType, AbstractComponent $component, int $engineCode = 0): QueryInterface;
+    public function addOrReplaceComponent(int $componentType, AbstractComponent $component): QueryInterface;
 
     /**
-     * Get all components with specified ```componentType``` and ```engineCode```.
-     * Component with no ```engineCode``` (0) also will be added.
+     * Get all components with specified ```componentType```.
      * 
      * Get all components when no parameter is specified.
      * 
      * @param int $componentType Component type from ```ComponentType``` enum class
-     * @param int $engineCode Engine type from ```EngineType``` enum class
      * @return AbstractComponent[] Components.
      */
-    public function getComponents(int $componentType = 0, int $engineCode = 0): array;
+    public function getComponents(int $componentType = 0): array;
 
     /**
-     * Get single components with specified ```componentType``` and ```engineCode```.
-     * Any component with specified ```componentType``` will be returned if component
-     * with specified ```engineCode``` was not found.
+     * Get single components with specified ```componentType```.
      * 
      * @param int $componentType Component type from ```ComponentType``` enum class
-     * @param int $engineCode Engine type from ```EngineType``` enum class
      * @return ?AbstractComponent Component.
      */
-    public function getOneComponent(int $componentType, int $engineCode = 0): ?AbstractComponent;
+    public function getOneComponent(int $componentType): ?AbstractComponent;
 
     /**
-     * Check wether components with specified ```componentType``` and ```engineCode``` is exists.
+     * Check wether components with specified ```componentType``` is exists.
      * 
      * @param int $componentType Component type from ```ComponentType``` enum class
-     * @param int $engineCode Engine type from ```EngineType``` enum class
      * @return bool Is exists.
      */
-    public function hasComponent(int $componentType, int $engineCode = 0): bool;
-
-    /**
-     * @param int $engine Engine type from ```EngineType``` enum class
-     * @return $this Self object
-     */
-    public function for(int $engine, callable $callback): QueryInterface;
+    public function hasComponent(int $componentType): bool;
 
     /**
      * Execute query when condition is fulfilled
