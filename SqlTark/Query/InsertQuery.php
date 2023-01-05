@@ -12,6 +12,9 @@ use SqlTark\Component\InsertQueryClause;
 use SqlTark\Helper;
 use SqlTark\Query\Traits\BasicFromTrait;
 
+/**
+ * @deprecated Use Query.asInsert instead
+ */
 class InsertQuery extends BaseQuery
 {
     use BasicFromTrait;

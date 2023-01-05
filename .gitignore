@@ -1,5 +1,7 @@
 vendor
 composer.lock
 rnd.php
+rnd-*.php
 old
 sqltark.code-workspace
+*.bkp.*

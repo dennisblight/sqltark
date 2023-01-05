@@ -14,7 +14,6 @@ use SqlTark\Component\RawFromClause;
 use SqlTark\Expressions\BaseExpression;
 use SqlTark\Component\AdHocTableFromClause;
 use SqlTark\Helper;
-use SqlTark\Query\Interfaces\QueryInterface;
 
 /**
  * @method static from(string $table, ?string $alias = null)

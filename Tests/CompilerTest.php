@@ -7,8 +7,6 @@ use SqlTark\Compiler\MySqlCompiler;
 use SqlTark\Query\Query;
 use SqlTark\Expressions;
 
-use function SqlTark\Expressions\column;
-
 final class CompilerTest extends TestCase
 {
     public function testQuery_from()
@@ -561,12 +559,84 @@ final class CompilerTest extends TestCase
         $this->assertEquals($expected, $compiled, 'Test escape');
     }
 
+    public function testQuery_join()
+    {
+        $compiler = new MySqlCompiler;
+
+        $q = new Query('t1');
+        $q->join('t2', 't1.id', 't2.id');
+
+        $expected = "SELECT * FROM `t1` JOIN `t2` ON `t1`.`id` = `t2`.`id`";
+        $compiled = $compiler->compileQuery($q);
+        $this->assertEquals($expected, $compiled, 'Test Join');
+
+        $q = new Query('t1');
+        $q->leftJoin('t2', 't1.id', 't2.id');
+
+        $expected = "SELECT * FROM `t1` LEFT JOIN `t2` ON `t1`.`id` = `t2`.`id`";
+        $compiled = $compiler->compileQuery($q);
+        $this->assertEquals($expected, $compiled, 'Test Left Join');
+
+        $q = new Query('t1');
+        $q->rightJoin('t2', 't1.id', 't2.id');
+
+        $expected = "SELECT * FROM `t1` RIGHT JOIN `t2` ON `t1`.`id` = `t2`.`id`";
+        $compiled = $compiler->compileQuery($q);
+        $this->assertEquals($expected, $compiled, 'Test Right Join');
+
+        $q = new Query('t1');
+        $q->innerJoin('t2', 't1.id', 't2.id');
+
+        $expected = "SELECT * FROM `t1` INNER JOIN `t2` ON `t1`.`id` = `t2`.`id`";
+        $compiled = $compiler->compileQuery($q);
+        $this->assertEquals($expected, $compiled, 'Test Inner Join');
+
+        $q = new Query('t1');
+        $q->outerJoin('t2', 't1.id', 't2.id');
+
+        $expected = "SELECT * FROM `t1` OUTER JOIN `t2` ON `t1`.`id` = `t2`.`id`";
+        $compiled = $compiler->compileQuery($q);
+        $this->assertEquals($expected, $compiled, 'Test Outer Join');
+    }
+
+    public function testQuery_multipleConditionJoin()
+    {
+        $compiler = new MySqlCompiler;
+
+        $q = new Query('t1');
+        $q->leftJoin(function($j) {
+            return $j->from('t2 AS a')
+                ->on('t1.id', 't2.id')
+                ->on('t1.period', 202212)
+                ->on('t1.name', Expressions::literal('zay'))
+            ;
+        });
+        $q->whereNull('t2.id');
+
+        $expected = "SELECT * FROM `t1` LEFT JOIN `t2` AS `a` ON `t1`.`id` = `t2`.`id` AND `t1`.`period` = 202212 AND `t1`.`name` = 'zay' WHERE `t2`.`id` IS NULL";
+        $compiled = $compiler->compileQuery($q);
+        $this->assertEquals($expected, $compiled, 'Test Join');
+
+        $q = new Query('t1');
+        $q->leftJoin('t2 AS a', function($j) {
+            return $j->on('t1.id', 't2.id')
+                ->on('t1.period', 202212)
+                ->on('t1.name', Expressions::literal('zay'))
+            ;
+        });
+        $q->whereNull('t2.id');
+
+        $expected = "SELECT * FROM `t1` LEFT JOIN `t2` AS `a` ON `t1`.`id` = `t2`.`id` AND `t1`.`period` = 202212 AND `t1`.`name` = 'zay' WHERE `t2`.`id` IS NULL";
+        $compiled = $compiler->compileQuery($q);
+        $this->assertEquals($expected, $compiled, 'Test Join');
+    }
+
     public function testInsertQuery()
     {
         $compiler = new MySqlCompiler;
 
         $query = new Query('t1');
-        $insertQuery = $query->insert([
+        $insertQuery = $query->asInsert([
             'col1' => 1,
             'col2' => 1.01,
             'col3' => null,
@@ -579,7 +649,7 @@ final class CompilerTest extends TestCase
         $this->assertEquals($expected, $compiled);
 
         $query = new Query('t1');
-        $insertQuery = $query->insert(
+        $insertQuery = $query->asInsert(
             ['col1', 'col2', 'col3', 'col4', 'col5'],
             [
                 [1, 1.01, NULL, FALSE, 'string'],
@@ -593,7 +663,7 @@ final class CompilerTest extends TestCase
         $this->assertEquals($expected, $compiled);
 
         $query = new Query('t1');
-        $insertQuery = $query->insert(
+        $insertQuery = $query->asInsert(
             [
                 ['col1' => 1, 'col2' => 1.01, 'col3' => NULL, 'col4' => FALSE, 'col5' => 'string'],
                 ['col1' => 1, 'col2' => 1.01, 'col3' => NULL, 'col4' => FALSE, 'col5' => 'string'],
@@ -612,14 +682,14 @@ final class CompilerTest extends TestCase
         $q = new Query('t2');
 
         $query = new Query('t1');
-        $insertQuery = $query->insertQuery($q);
+        $insertQuery = $query->asInsertWithQuery($q);
 
         $expected = "INSERT INTO `t1` SELECT * FROM `t2`";
         $compiled = $compiler->compileInsertQuery($insertQuery);
         $this->assertEquals($expected, $compiled);
 
         $query = new Query('t1');
-        $insertQuery = $query->insertQuery($q, ['c1', 'c2', 'c3']);
+        $insertQuery = $query->asInsertWithQuery($q, ['c1', 'c2', 'c3']);
 
         $expected = "INSERT INTO `t1` (`c1`, `c2`, `c3`) SELECT * FROM `t2`";
         $compiled = $compiler->compileInsertQuery($insertQuery);
@@ -632,7 +702,7 @@ final class CompilerTest extends TestCase
         $q = new Query('t2');
 
         $query = new Query('t1');
-        $updateQuery = $query->update([
+        $updateQuery = $query->asUpdate([
             'col1' => 'str',
             'col2' => 1,
             'col3' => 1.1,
@@ -645,7 +715,7 @@ final class CompilerTest extends TestCase
         $this->assertEquals($expected, $compiled);
 
         $query = new Query('t1');
-        $updateQuery = $query->update((object) [
+        $updateQuery = $query->asUpdate((object) [
             'col1' => 'str',
             'col2' => 1,
             'col3' => 1.1,
@@ -658,7 +728,7 @@ final class CompilerTest extends TestCase
         $this->assertEquals($expected, $compiled);
 
         $query = new Query('t1');
-        $updateQuery = $query->where('col1', 'str')->limit(1)->update([
+        $updateQuery = $query->where('col1', 'str')->limit(1)->asUpdate([
             'col1' => 'str',
             'col2' => 1,
             'col3' => 1.1,
@@ -678,14 +748,14 @@ final class CompilerTest extends TestCase
         $q = new Query('t2');
 
         $query = new Query('t1');
-        $deleteQuery = $query->delete();
+        $deleteQuery = $query->asDelete();
 
         $expected = "DELETE FROM `t1`";
         $compiled = $compiler->compileDeleteQuery($deleteQuery);
         $this->assertEquals($expected, $compiled);
 
         $query = new Query('t1');
-        $deleteQuery = $query->delete()->where('col1', 'str')->limit(1);
+        $deleteQuery = $query->asDelete()->where('col1', 'str')->limit(1);
 
         $expected = "DELETE FROM `t1` WHERE `col1` = 'str' LIMIT 1";
         $compiled = $compiler->compileDeleteQuery($deleteQuery);

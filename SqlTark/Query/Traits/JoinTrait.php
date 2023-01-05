@@ -94,7 +94,7 @@ trait JoinTrait
     /**
      * @return $this Self object
      */
-    public function innerJoin($table, $left, $operator = null, $right = null)
+    public function innerJoin($table, $left = null, $operator = null, $right = null)
     {
         $this->joinType = JoinType::InnerJoin;
         $result = call_user_func_array([$this, 'join'], func_get_args());
@@ -105,7 +105,7 @@ trait JoinTrait
     /**
      * @return $this Self object
      */
-    public function leftJoin($table, $left, $operator = null, $right = null)
+    public function leftJoin($table, $left = null, $operator = null, $right = null)
     {
         $this->joinType = JoinType::LeftJoin;
         $result = call_user_func_array([$this, 'join'], func_get_args());
@@ -116,7 +116,7 @@ trait JoinTrait
     /**
      * @return $this Self object
      */
-    public function rightJoin($table, $left, $operator = null, $right = null)
+    public function rightJoin($table, $left = null, $operator = null, $right = null)
     {
         $this->joinType = JoinType::RightJoin;
         $result = call_user_func_array([$this, 'join'], func_get_args());
@@ -127,7 +127,7 @@ trait JoinTrait
     /**
      * @return $this Self object
      */
-    public function leftOuterJoin($table, $left, $operator = null, $right = null)
+    public function leftOuterJoin($table, $left = null, $operator = null, $right = null)
     {
         $this->joinType = JoinType::LeftOuterJoin;
         $result = call_user_func_array([$this, 'join'], func_get_args());
@@ -138,7 +138,7 @@ trait JoinTrait
     /**
      * @return $this Self object
      */
-    public function rightOuterJoin($table, $left, $operator = null, $right = null)
+    public function rightOuterJoin($table, $left = null, $operator = null, $right = null)
     {
         $this->joinType = JoinType::RightOuterJoin;
         $result = call_user_func_array([$this, 'join'], func_get_args());
@@ -149,7 +149,7 @@ trait JoinTrait
     /**
      * @return $this Self object
      */
-    public function outerJoin($table, $left, $operator = null, $right = null)
+    public function outerJoin($table, $left = null, $operator = null, $right = null)
     {
         $this->joinType = JoinType::OuterJoin;
         $result = call_user_func_array([$this, 'join'], func_get_args());
@@ -160,7 +160,7 @@ trait JoinTrait
     /**
      * @return $this Self object
      */
-    public function fullOuterJoin($table, $left, $operator = null, $right = null)
+    public function fullOuterJoin($table, $left = null, $operator = null, $right = null)
     {
         $this->joinType = JoinType::FullOuterJoin;
         $result = call_user_func_array([$this, 'join'], func_get_args());

@@ -189,7 +189,7 @@ final class Helper
         {
             $child = new Join;
             $child->setParent($ctx);
-            $callback = $callback($ctx);
+            $callback = $callback($child);
             if(!($callback instanceof Join))
             {
                 $class = Helper::getType($callback);

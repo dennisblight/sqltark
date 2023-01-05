@@ -13,6 +13,8 @@ final class MethodType
     public const Update = 4;
     public const Delete = 5;
 
+    public const Auto = -1;
+
     public static function nameOf(int $method): ?string
     {
         switch ($method) {
@@ -26,6 +28,9 @@ final class MethodType
                 return 'Update';
             case self::Delete:
                 return 'Delete';
+
+            case self::Auto:
+                return 'Auto';
         }
     }
 

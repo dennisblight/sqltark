@@ -26,6 +26,8 @@ abstract class AbstractConnection
 
     protected $fetchMode = PDO::FETCH_OBJ;
 
+    protected $transactionCount = 0;
+
     public function getConfig()
     {
         return [
@@ -115,6 +117,21 @@ abstract class AbstractConnection
         $this->onConnected();
 
         return $this->pdo;
+    }
+
+    public function transaction(): bool
+    {
+        return $this->pdo->beginTransaction();
+    }
+
+    public function commit(): bool
+    {
+        return $this->pdo->commit();
+    }
+
+    public function rollback(): bool
+    {
+        return $this->pdo->rollBack();
     }
 
     protected function onConnected() { }

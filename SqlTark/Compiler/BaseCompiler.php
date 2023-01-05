@@ -43,10 +43,8 @@ use SqlTark\Expressions\Literal;
 use SqlTark\Expressions\Raw;
 use SqlTark\Expressions\Variable;
 use SqlTark\Helper;
-use SqlTark\Query\DeleteQuery;
-use SqlTark\Query\InsertQuery;
+use SqlTark\Query\MethodType;
 use SqlTark\Query\Query;
-use SqlTark\Query\UpdateQuery;
 
 abstract class BaseCompiler
 {
@@ -60,602 +58,31 @@ abstract class BaseCompiler
     public const MaxValue = '18446744073709551615';
 
     public const EngineCode = EngineType::Generic;
-
-    /**
-     * @param AbstractColumn[] $columns
-     */
-    public function compileColumns(iterable $columns, $withAlias = true): ?string
+    
+    public function compileQuery(Query $query, int $method = MethodType::Auto): ?string
     {
-        $expressionResolver = function ($expression) use ($withAlias) {
-
-            if ($expression instanceof BaseExpression) {
-                return $this->compileExpression($expression, $withAlias);
-            } elseif ($expression instanceof Query) {
-                $resolvedValue = $this->compileQuery($expression);
-                $resolvedValue = "($resolvedValue)";
-
-                if ($withAlias) {
-                    $alias = $expression->getAlias();
-                    if ($alias) $resolvedValue .= ' AS ' . $this->wrapIdentifier($alias);
-                }
-
-                return $resolvedValue;
-            }
-        };
-
-        $result = '';
-        foreach ($columns as $index => $column) {
-            $resolvedColumn = null;
-            if ($column instanceof ColumnClause) {
-
-                $columnContent = $column->getColumn();
-                $resolvedColumn = $expressionResolver($columnContent);
-            } elseif ($column instanceof RawColumn) {
-
-                $resolvedColumn = $this->compileRaw(
-                    $column->getExpression(),
-                    $column->getBindings()
-                );
-            }
-
-            if ($resolvedColumn) {
-
-                if ($index > 0) $result .= ', ';
-                $result .= $resolvedColumn;
-            }
+        $method = $method === MethodType::Auto ? $query->getMethod() : $method;
+        switch($method) {
+            case MethodType::Select:
+            return $this->compileSelectQuery($query);
+            
+            case MethodType::Insert:
+            return $this->compileInsertQuery($query);
+            
+            case MethodType::Update:
+            return $this->compileUpdateQuery($query);
+            
+            case MethodType::Delete:
+            return $this->compileDeleteQuery($query);
         }
 
-        return $result;
+        $methodName = MethodType::nameOf($method);
+        throw new InvalidArgumentException(
+            "Could not compile query with type '{$methodName}' ({$method})"
+        );
     }
 
-    /**
-     * @param AbstractColumn[] $columns
-     */
-    public function compileSelect(iterable $columns, bool $isDisctinct = false): ?string
-    {
-        $result = $this->compileColumns($columns);
-        if (empty($result)) {
-            $result = '*';
-        }
-
-        if($isDisctinct) {
-            $result = "DISTINCT $result";
-        }
-
-        return "SELECT $result";
-    }
-
-    public function compileFrom(?AbstractFrom $table): ?string
-    {
-        $result = null;
-        if ($table instanceof FromClause) {
-            $expression = $table->getTable();
-            if (is_string($expression)) {
-                $result = $this->compileTable($expression);
-            } elseif ($expression instanceof Query) {
-                $result = '(' . $this->compileQuery($expression) . ') AS ' . $table->getAlias();
-            }
-        } elseif ($table instanceof RawFromClause) {
-            $result = $this->compileRaw(
-                $table->getExpression(),
-                $table->getBindings()
-            );
-        } elseif ($table instanceof AdHocTableFromClause) {
-            $columns = $table->getColumns();
-            $values = $table->getValues();
-            $alias = $table->getAlias();
-
-            $result = '(';
-            $first = true;
-            foreach ($values as $row) {
-                if (!$first) {
-                    $result .= ' UNION ALL ';
-                }
-
-                $result .= 'SELECT ';
-                foreach ($row as $index => $value) {
-                    $resolvedValue = null;
-                    if ($value instanceof BaseExpression) {
-                        $resolvedValue = $this->compileExpression($value, false);
-                    } elseif ($value instanceof Query) {
-                        $resolvedValue = '(' . $this->compileQuery($value) . ')';
-                    }
-
-                    if ($first) {
-                        $resolvedValue .= ' AS ' . $this->wrapIdentifier($columns[$index]);
-                    }
-
-                    if ($index > 0) {
-                        $result .= ', ';
-                    }
-
-                    $result .= $resolvedValue;
-                    if (static::FromTableRequired) {
-                        $result .= ' FROM DUAL';
-                    }
-                }
-
-                $first = false;
-            }
-
-            $result .= ') AS ' . $this->wrapIdentifier($alias);
-        }
-
-        if (empty($result) && static::FromTableRequired) {
-            $result = static::DummyTable;
-        }
-
-        return $result;
-    }
-
-    /**
-     * @param AbstractJoin[] $joins
-     */
-    public function compileJoin(iterable $joins): ?string
-    {
-        $result = null;
-        foreach ($joins as $index => $component) {
-            $resolvedJoin = null;
-            if ($component instanceof JoinClause) {
-                $join = $component->getJoin();
-                $table = $join->getOneComponent(ComponentType::From);
-
-                $resolvedTable = $this->compileFrom($table);
-
-                $resolvedJoin = JoinType::syntaxOf($join->getType()) . ' ' . $resolvedTable;
-                /** Natural and cross join doesn't need on condition */
-                if (!in_array($join->getType(), [JoinType::CrossJoin, JoinType::NaturalJoin])) {
-                    $conditions = $join->getComponents(ComponentType::Where);
-                    $resolvedCondition = $this->compileConditions($conditions);
-                    if (!empty($resolvedCondition)) {
-                        $resolvedJoin .= ' ON ' . $resolvedCondition;
-                    }
-                }
-            }
-
-            if (!empty($resolvedJoin)) {
-                if ($index > 0) $result .= ' ';
-                $result .= $resolvedJoin;
-            }
-        }
-
-        return $result;
-    }
-
-    /**
-     * @param AbstractCondition[] $conditions
-     */
-    public function compileWhere(iterable $conditions): ?string
-    {
-        $resolvedCondition = $this->compileConditions($conditions);
-        if (!empty($resolvedCondition)) {
-            return 'WHERE ' . $resolvedCondition;
-        }
-
-        return null;
-    }
-
-    public function compilePaging(?LimitClause $limitClause, ?OffsetClause $offsetClause): ?string
-    {
-        $resolvedPaging = null;
-        if ($limitClause && $limitClause->hasLimit()) {
-            $limit = $limitClause->getLimit();
-            if ($offsetClause && $offsetClause->hasOffset()) {
-                $offset = $offsetClause->getOffset();
-                $resolvedPaging = "LIMIT $offset, $limit";
-            }
-            else $resolvedPaging = "LIMIT $limit";
-        } elseif ($offsetClause && $offsetClause->hasOffset()) {
-            $offset = $offsetClause->getOffset();
-            $resolvedPaging = "LIMIT $offset, " . static::MaxValue;
-        }
-
-        return $resolvedPaging;
-    }
-
-    /**
-     * @param AbstractCondition[] $conditions
-     */
-    public function compileHaving(iterable $conditions): ?string
-    {
-        $resolvedCondition = $this->compileConditions($conditions, ComponentType::Having);
-        if (!empty($resolvedCondition)) {
-            return 'HAVING ' . $resolvedCondition;
-        }
-
-        return null;
-    }
-
-    /**
-     * @param AbstractCondition[] $conditions
-     */
-    public function compileConditions(iterable $conditions, $type = ComponentType::Where): ?string
-    {
-        $expressionResolver = function ($expression, $wrapQuery = true) {
-
-            if ($expression instanceof BaseExpression) {
-                return $this->compileExpression($expression, false);
-            } elseif ($expression instanceof Query) {
-                $resolvedValue = $this->compileQuery($expression);
-                if ($wrapQuery) $resolvedValue = "($resolvedValue)";
-                return $resolvedValue;
-            }
-        };
-
-        $result = null;
-        foreach ($conditions as $index => $condition) {
-            $resolvedCondition = null;
-            if ($condition instanceof CompareClause) {
-                $left = $condition->getLeft();
-                $right = $condition->getRight();
-                $operator = $condition->getOperator();
-
-                $resolvedLeft = $expressionResolver($left);
-                $resolvedRight = $expressionResolver($right);
-
-                $resolvedCondition = "$resolvedLeft $operator $resolvedRight";
-                if ($condition->getNot()) {
-                    $resolvedCondition = "NOT ($resolvedCondition)";
-                }
-            } elseif ($condition instanceof BetweenCondition) {
-                $column = $condition->getColumn();
-                $lower = $condition->getLower();
-                $higher = $condition->getHigher();
-
-                $resolvedColumn = $expressionResolver($column);
-                $resolvedLower = $expressionResolver($lower);
-                $resolvedHigher = $expressionResolver($higher);
-
-                $resolvedCondition = $resolvedColumn;
-                if ($condition->getNot()) {
-                    $resolvedCondition .= ' NOT';
-                }
-
-                $resolvedCondition .= " BETWEEN ($resolvedLower AND $resolvedHigher)";
-            } elseif ($condition instanceof ExistsCondition) {
-                $query = $condition->getQuery();
-                $resolvedQuery = $this->compileQuery($query);
-
-                $resolvedCondition = $condition->getNot() ? 'NOT EXISTS' : 'EXISTS';
-                $resolvedCondition .= "($resolvedQuery)";
-            } elseif ($condition instanceof NullCondition) {
-                $column = $condition->getColumn();
-
-                $resolvedCondition = $expressionResolver($column);
-                $resolvedCondition .= $condition->getNot() ? ' IS NOT NULL' : ' IS NULL';
-            } elseif ($condition instanceof LikeCondition) {
-                $column = $condition->getColumn();
-                $resolvedColumn = $expressionResolver($column);
-
-                $value = $condition->getValue();
-                $escape = $condition->getEscapeCharacter();
-
-                $operator = $condition->getNot() ? 'NOT LIKE' : 'LIKE';
-                if ($condition->isCaseSensitive()) {
-                    $operator .= ' BINARY';
-                }
-
-                if($condition->getType() != LikeType::Like) {
-                    $esc = $escape ?? '\\';
-                    $value = str_replace(
-                        [$esc, '%', '_'],
-                        [$esc . $esc, $esc . '%', $esc . '_'],
-                        $value
-                    );
-                }
-
-                switch ($condition->getType()) {
-                    case LikeType::Contains:
-                        $value = "%$value%";
-                        break;
-                    case LikeType::Starts:
-                        $value = "$value%";
-                        break;
-                    case LikeType::Ends:
-                        $value = "%$value";
-                        break;
-                }
-                
-                $extraEscape = $condition->getType() != LikeType::Like && (empty($escape) || $escape == '\\');
-                $value = $this->quote($value, $extraEscape);
-
-                $resolvedCondition = "$resolvedColumn $operator $value";
-                if ($escape) {
-                    $resolvedCondition .= " ESCAPE " . $this->quote($escape);
-                }
-            } elseif ($condition instanceof InCondition) {
-                $column = $condition->getColumn();
-                $values = $condition->getValues();
-
-                $resolvedColumn = $expressionResolver($column);
-                $resolvedValues = '';
-                if ($values instanceof Query) {
-                    $resolvedValues = $this->compileQuery($values);
-                } else {
-                    $first = true;
-                    foreach ($values as $value) {
-                        if (!$first) $resolvedValues .= ', ';
-                        $resolvedValues .= $expressionResolver($value);
-                        $first = false;
-                    }
-                }
-
-                $resolvedCondition = $resolvedColumn;
-                $resolvedCondition .= $condition->getNot() ? ' NOT IN ' : ' IN ';
-                $resolvedCondition .= "($resolvedValues)";
-            } elseif ($condition instanceof GroupCondition) {
-                $clauses = $condition->getCondition()->getComponents($type);
-                $resolvedCondition = $this->compileConditions($clauses);
-                if(count($clauses) > 1 || (count($clauses) == 1 && $clauses[0] instanceof RawCondition)) {
-                    $resolvedCondition = "($resolvedCondition)";
-                }
-            } elseif ($condition instanceof RawCondition) {
-                $resolvedCondition = $this->compileRaw(
-                    $condition->getExpression(),
-                    $condition->getBindings()
-                );
-            }
-
-            if ($resolvedCondition) {
-                if ($index > 0) $result .= $condition->getOr() ? ' OR ' : ' AND ';
-                $result .= $resolvedCondition;
-            }
-        }
-
-        return $result;
-    }
-
-    public function compileInsertQuery(InsertQuery $query): ?string
-    {
-        $from = $query->getOneComponent(ComponentType::From);
-        if(empty($from)) {
-            throw new InvalidArgumentException(
-                "Insert query does not have table reference"
-            );
-        }
-
-        $values = $query->getOneComponent(ComponentType::Insert);
-        if(empty($values)) {
-            throw new InvalidArgumentException(
-                "Insert query does not have value"
-            );
-        }
-        
-        $resolvedTable = null;
-        if($from instanceof FromClause) {
-            $table = $from->getTable();
-            $resolvedTable = $this->wrapIdentifier($table);
-        }
-        elseif($from instanceof RawFromClause) {
-            $expression = $from->getExpression();
-            $bindings = $from->getBindings();
-            $resolvedTable = $this->compileRaw($expression, $bindings);
-        }
-        else {
-            $class = Helper::getType($from);
-            throw new InvalidArgumentException(
-                "Could not resolve '$class' for insert query"
-            );
-        }
-
-        $result = "INSERT INTO $resolvedTable ";
-        if($values instanceof InsertClause) {
-            $result .= '(';
-            foreach($values->getColumns() as $index => $column) {
-                if($index > 0) {
-                    $result .= ', ';
-                }
-
-                $result .= $this->wrapIdentifier($column);
-            }
-            $result .= ') VALUES ';
-
-            $first = true;
-            foreach ($values->getValues() as $row) {
-                if (!$first) {
-                    $result .= ', ';
-                }
-
-                $result .= '(';
-                foreach ($row as $index => $value) {
-                    $resolvedValue = null;
-                    if ($value instanceof BaseExpression) {
-                        $resolvedValue = $this->compileExpression($value, false);
-                    } elseif ($value instanceof Query) {
-                        $resolvedValue = '(' . $this->compileQuery($value) . ')';
-                    }
-
-                    if ($index > 0) {
-                        $result .= ', ';
-                    }
-
-                    $result .= $resolvedValue;
-                }
-                $result .= ')';
-
-                $first = false;
-            }
-        }
-        elseif($values instanceof InsertQueryClause) {
-            $columns = $values->getColumns();
-            if(!empty($columns)) {
-                $result .= '(';
-                foreach($columns as $index => $column) {
-                    if($index > 0) {
-                        $result .= ', ';
-                    }
-
-                    $result .= $this->wrapIdentifier($column);
-                }
-                $result .= ') ';
-            }
-
-            $query = $values->getQuery();
-            $result .= $this->compileQuery($query);
-        }
-
-        return $result;
-    }
-
-    public function compileUpdateQuery(UpdateQuery $query): ?string
-    {
-        $from = null;
-        $joins = [];
-        $where = [];
-        $orderBy = [];
-        $limit = null;
-        $offset = null;
-        $update = null;
-
-        foreach ($query->getComponents() as $component) {
-            switch ($component->getComponentType()) {
-                case ComponentType::From:
-                    $from = $component;
-                    break;
-                case ComponentType::Join:
-                    $joins[] = $component;
-                    break;
-                case ComponentType::Where:
-                    $where[] = $component;
-                    break;
-                case ComponentType::GroupBy:
-                    $groupBy[] = $component;
-                    break;
-                case ComponentType::Having:
-                    $havings[] = $component;
-                    break;
-                case ComponentType::OrderBy:
-                    $orderBy[] = $component;
-                    break;
-                case ComponentType::Limit:
-                    $limit = $component;
-                    break;
-                case ComponentType::Offset:
-                    $offset = $component;
-                    break;
-                case ComponentType::Update:
-                    $update = $component;
-                    break;
-            }
-        }
-
-        if(empty($from)) {
-            throw new InvalidArgumentException(
-                "Table not specified!"
-            );
-        }
-
-        if(empty($update)) {
-            throw new InvalidArgumentException(
-                "Update value not specified!"
-            );
-        }
-
-        $result = 'UPDATE ' . $this->compileFrom($from);
-
-        $resolvedJoin = $this->compileJoin($joins);
-        if($resolvedJoin) {
-            $result .= ' ' . $resolvedJoin;
-        }
-
-        $expressionResolver = function ($expression) {
-
-            if ($expression instanceof BaseExpression) {
-                return $this->compileExpression($expression, false);
-            } elseif ($expression instanceof Query) {
-                $resolvedValue = $this->compileQuery($expression);
-                $resolvedValue = "($resolvedValue)";
-                return $resolvedValue;
-            }
-        };
-
-        if($update instanceof UpdateClause) {
-            $result .= ' SET ';
-            $first = true;
-            foreach($update->getValue() as $column => $value) {
-                if(!$first) $result .= ', ';
-                $result .= $this->wrapIdentifier($column);
-                $result .= ' = ';
-                $result .= $expressionResolver($value);
-                $first = false;
-            }
-        }
-
-        $resolvedWhere = $this->compileWhere($where);
-        if($resolvedWhere) {
-            $result .= ' ' . $resolvedWhere;
-        }
-
-        $resolvedOrderBy = $this->compileOrderBy($orderBy);
-        if($resolvedOrderBy) {
-            $result .= ' ' . $resolvedOrderBy;
-        }
-
-        $resolvedPaging = $this->compilePaging($limit, $offset);
-        if($resolvedPaging) {
-            $result .= ' ' . $resolvedPaging;
-        }
-
-        return $result;
-    }
-
-    public function compileDeleteQuery(DeleteQuery $query): ?string
-    {
-        $from = null;
-        $joins = [];
-        $where = [];
-        $orderBy = [];
-        $limit = null;
-        $offset = null;
-
-        foreach ($query->getComponents() as $component) {
-            switch ($component->getComponentType()) {
-                case ComponentType::From:
-                    $from = $component;
-                    break;
-                case ComponentType::Where:
-                    $where[] = $component;
-                    break;
-                case ComponentType::OrderBy:
-                    $orderBy[] = $component;
-                    break;
-                case ComponentType::Limit:
-                    $limit = $component;
-                    break;
-                case ComponentType::Offset:
-                    $offset = $component;
-                    break;
-            }
-        }
-
-        if(empty($from)) {
-            throw new InvalidArgumentException(
-                "Table not specified!"
-            );
-        }
-
-        $result = 'DELETE FROM ' . $this->compileFrom($from);
-
-        $resolvedWhere = $this->compileWhere($where);
-        if($resolvedWhere) {
-            $result .= ' ' . $resolvedWhere;
-        }
-
-        $resolvedOrderBy = $this->compileOrderBy($orderBy);
-        if($resolvedOrderBy) {
-            $result .= ' ' . $resolvedOrderBy;
-        }
-
-        $resolvedPaging = $this->compilePaging($limit, $offset);
-        if($resolvedPaging) {
-            $result .= ' ' . $resolvedPaging;
-        }
-
-        return $result;
-
-    }
-
-    public function compileQuery(Query $query): ?string
+    public function compileSelectQuery(Query $query): ?string
     {
         $cte = [];
         $selects = [];
@@ -760,43 +187,308 @@ abstract class BaseCompiler
     }
 
     /**
-     * @param FromClause[] $tables
+     * @param AbstractColumn[] $columns
      */
-    public function compileCte(iterable $tables)
+    public function compileSelect(iterable $columns, bool $isDisctinct = false): ?string
+    {
+        $result = $this->compileColumns($columns);
+        if (empty($result)) {
+            $result = '*';
+        }
+
+        if($isDisctinct) {
+            $result = "DISTINCT $result";
+        }
+
+        return "SELECT $result";
+    }
+    /**
+     * @param AbstractColumn[] $columns
+     */
+    public function compileColumns(iterable $columns, $withAlias = true): ?string
+    {
+        $expressionResolver = function ($expression) use ($withAlias) {
+
+            if ($expression instanceof BaseExpression) {
+                return $this->compileExpression($expression, $withAlias);
+            } elseif ($expression instanceof Query) {
+                $resolvedValue = $this->compileQuery($expression);
+                $resolvedValue = "($resolvedValue)";
+
+                if ($withAlias) {
+                    $alias = $expression->getAlias();
+                    if ($alias) $resolvedValue .= ' AS ' . $this->wrapIdentifier($alias);
+                }
+
+                return $resolvedValue;
+            }
+        };
+
+        $result = '';
+        $index = 0;
+        foreach ($columns as $column) {
+            $resolvedColumn = null;
+            if ($column instanceof ColumnClause) {
+
+                $columnContent = $column->getColumn();
+                $resolvedColumn = $expressionResolver($columnContent);
+            } elseif ($column instanceof RawColumn) {
+
+                $resolvedColumn = $this->compileRaw(
+                    $column->getExpression(),
+                    $column->getBindings()
+                );
+            }
+
+            if ($resolvedColumn) {
+
+                if ($index > 0) $result .= ', ';
+                $result .= $resolvedColumn;
+            }
+            $index++;
+        }
+
+        return $result;
+    }
+
+    public function compileFrom(?AbstractFrom $table): ?string
     {
         $result = null;
+        if ($table instanceof FromClause) {
+            $expression = $table->getTable();
+            if (is_string($expression)) {
+                $result = $this->compileTable($expression);
+            } elseif ($expression instanceof Query) {
+                $result = '(' . $this->compileQuery($expression) . ') AS ' . $table->getAlias();
+            }
+        } elseif ($table instanceof RawFromClause) {
+            $result = $this->compileRaw(
+                $table->getExpression(),
+                $table->getBindings()
+            );
+        } elseif ($table instanceof AdHocTableFromClause) {
+            $result = '(' . $this->compileAdHocTable($table) . ') AS '
+                .  $this->wrapIdentifier($table->getAlias());
+        }
 
-        foreach($tables as $index => $table) {
-            if($index > 0) $result .= ', ';
-            else $result .= 'WITH ';
+        if (empty($result) && static::FromTableRequired) {
+            $result = static::DummyTable;
+        }
 
-            $query = $table->getTable();
-            $alias = $table->getAlias();
-            $result .= $alias . ' AS (' . $this->compileQuery($query) . ')';
+        return $result;
+    }
+
+    public function compileTable(string $name): ?string
+    {
+        $result = trim($name);
+        if (empty($result)) {
+            return null;
+        }
+
+        $aliasSplit = array_map(
+            function ($item) {
+                return $this->wrapIdentifier($item);
+            },
+            $this->aliasFinder($result)
+        );
+
+        $result = $aliasSplit[0];
+        if (isset($aliasSplit[1])) {
+            $result .= ' AS ' . $aliasSplit[1];
         }
 
         return $result;
     }
 
     /**
-     * @param CombineClause[] $combines
+     * @param AbstractJoin[] $joins
      */
-    public function compileCombine(iterable $combines)
+    public function compileJoin(iterable $joins): ?string
     {
         $result = null;
+        $index = 0;
+        foreach ($joins as $component) {
+            $resolvedJoin = null;
+            if ($component instanceof JoinClause) {
+                $join = $component->getJoin();
+                $table = $join->getOneComponent(ComponentType::From);
 
-        foreach($combines as $index => $combine) {
-            if($index > 0) $result .= ' ';
+                $resolvedTable = $this->compileFrom($table);
 
-            $result .= CombineType::syntaxOf($combine->getOperation());
-            if($combine->isAll()) {
-                $result .= ' ALL';
+                $resolvedJoin = JoinType::syntaxOf($join->getType()) . ' ' . $resolvedTable;
+                /** Natural and cross join doesn't need on condition */
+                if (!in_array($join->getType(), [JoinType::CrossJoin, JoinType::NaturalJoin])) {
+                    $conditions = $join->getComponents(ComponentType::Where);
+                    $resolvedCondition = $this->compileConditions($conditions);
+                    if (!empty($resolvedCondition)) {
+                        $resolvedJoin .= ' ON ' . $resolvedCondition;
+                    }
+                }
             }
 
-            $result .= ' ' . $this->compileQuery($combine->getQuery());
+            if (!empty($resolvedJoin)) {
+                if ($index > 0) $result .= ' ';
+                $result .= $resolvedJoin;
+            }
+            $index++;
         }
 
         return $result;
+    }
+
+    /**
+     * @param AbstractCondition[] $conditions
+     */
+    public function compileConditions(iterable $conditions, $type = ComponentType::Where): ?string
+    {
+        $expressionResolver = function ($expression, $wrapQuery = true) {
+
+            if ($expression instanceof BaseExpression) {
+                return $this->compileExpression($expression, false);
+            } elseif ($expression instanceof Query) {
+                $resolvedValue = $this->compileQuery($expression);
+                if ($wrapQuery) $resolvedValue = "($resolvedValue)";
+                return $resolvedValue;
+            }
+        };
+
+        $result = null;
+        $index = 0;
+        foreach ($conditions as $condition) {
+            $resolvedCondition = null;
+            if ($condition instanceof CompareClause) {
+                $left = $condition->getLeft();
+                $right = $condition->getRight();
+                $operator = $condition->getOperator();
+
+                $resolvedLeft = $expressionResolver($left);
+                $resolvedRight = $expressionResolver($right);
+
+                $resolvedCondition = "$resolvedLeft $operator $resolvedRight";
+                if ($condition->getNot()) {
+                    $resolvedCondition = "NOT ($resolvedCondition)";
+                }
+            } elseif ($condition instanceof BetweenCondition) {
+                $column = $condition->getColumn();
+                $lower = $condition->getLower();
+                $higher = $condition->getHigher();
+
+                $resolvedColumn = $expressionResolver($column);
+                $resolvedLower = $expressionResolver($lower);
+                $resolvedHigher = $expressionResolver($higher);
+
+                $resolvedCondition = $resolvedColumn;
+                if ($condition->getNot()) {
+                    $resolvedCondition .= ' NOT';
+                }
+
+                $resolvedCondition .= " BETWEEN ($resolvedLower AND $resolvedHigher)";
+            } elseif ($condition instanceof ExistsCondition) {
+                $query = $condition->getQuery();
+                $resolvedQuery = $this->compileQuery($query);
+
+                $resolvedCondition = $condition->getNot() ? 'NOT EXISTS' : 'EXISTS';
+                $resolvedCondition .= "($resolvedQuery)";
+            } elseif ($condition instanceof NullCondition) {
+                $column = $condition->getColumn();
+
+                $resolvedCondition = $expressionResolver($column);
+                $resolvedCondition .= $condition->getNot() ? ' IS NOT NULL' : ' IS NULL';
+            } elseif ($condition instanceof LikeCondition) {
+                $column = $condition->getColumn();
+                $resolvedColumn = $expressionResolver($column);
+
+                $value = $condition->getValue();
+                $escape = $condition->getEscapeCharacter();
+
+                $operator = $condition->getNot() ? 'NOT LIKE' : 'LIKE';
+                if ($condition->isCaseSensitive()) {
+                    $operator .= ' BINARY';
+                }
+
+                if($condition->getType() != LikeType::Like) {
+                    $esc = $escape ?? '\\';
+                    $value = str_replace(
+                        [$esc, '%', '_'],
+                        [$esc . $esc, $esc . '%', $esc . '_'],
+                        $value
+                    );
+                }
+
+                switch ($condition->getType()) {
+                    case LikeType::Contains:
+                        $value = "%$value%";
+                        break;
+                    case LikeType::Starts:
+                        $value = "$value%";
+                        break;
+                    case LikeType::Ends:
+                        $value = "%$value";
+                        break;
+                }
+
+                $extraEscape = $condition->getType() != LikeType::Like && (empty($escape) || $escape == '\\');
+                $value = $this->quote($value, $extraEscape);
+
+                $resolvedCondition = "$resolvedColumn $operator $value";
+                if ($escape) {
+                    $resolvedCondition .= " ESCAPE " . $this->quote($escape);
+                }
+            } elseif ($condition instanceof InCondition) {
+                $column = $condition->getColumn();
+                $values = $condition->getValues();
+
+                $resolvedColumn = $expressionResolver($column);
+                $resolvedValues = '';
+                if ($values instanceof Query) {
+                    $resolvedValues = $this->compileQuery($values);
+                } else {
+                    $first = true;
+                    foreach ($values as $value) {
+                        if (!$first) $resolvedValues .= ', ';
+                        $resolvedValues .= $expressionResolver($value);
+                        $first = false;
+                    }
+                }
+
+                $resolvedCondition = $resolvedColumn;
+                $resolvedCondition .= $condition->getNot() ? ' NOT IN ' : ' IN ';
+                $resolvedCondition .= "($resolvedValues)";
+            } elseif ($condition instanceof GroupCondition) {
+                $clauses = $condition->getCondition()->getComponents($type);
+                $resolvedCondition = $this->compileConditions($clauses);
+                if(count($clauses) > 1 || (count($clauses) == 1 && $clauses[0] instanceof RawCondition)) {
+                    $resolvedCondition = "($resolvedCondition)";
+                }
+            } elseif ($condition instanceof RawCondition) {
+                $resolvedCondition = $this->compileRaw(
+                    $condition->getExpression(),
+                    $condition->getBindings()
+                );
+            }
+
+            if ($resolvedCondition) {
+                if ($index > 0) $result .= $condition->getOr() ? ' OR ' : ' AND ';
+                $result .= $resolvedCondition;
+            }
+
+            $index++;
+        }
+
+        return $result;
+    }
+
+    /**
+     * @param AbstractCondition[] $conditions
+     */
+    public function compileWhere(iterable $conditions): ?string
+    {
+        $resolvedCondition = $this->compileConditions($conditions);
+        if (!empty($resolvedCondition)) {
+            return 'WHERE ' . $resolvedCondition;
+        }
+
+        return null;
     }
 
     /**
@@ -810,6 +502,19 @@ abstract class BaseCompiler
         }
 
         return 'GROUP BY ' . $result;
+    }
+
+    /**
+     * @param AbstractCondition[] $conditions
+     */
+    public function compileHaving(iterable $conditions): ?string
+    {
+        $resolvedCondition = $this->compileConditions($conditions, ComponentType::Having);
+        if (!empty($resolvedCondition)) {
+            return 'HAVING ' . $resolvedCondition;
+        }
+
+        return null;
     }
 
     /**
@@ -830,7 +535,8 @@ abstract class BaseCompiler
         };
 
         $result = '';
-        foreach ($columns as $index => $column) {
+        $index = 0;
+        foreach ($columns as $column) {
             $resolvedColumn = null;
             if ($column instanceof OrderClause) {
 
@@ -852,6 +558,8 @@ abstract class BaseCompiler
                 if ($index > 0) $result .= ', ';
                 $result .= $resolvedColumn;
             }
+
+            $index++;
         }
 
         if (empty($result)) {
@@ -861,16 +569,383 @@ abstract class BaseCompiler
         return 'ORDER BY ' . $result;
     }
 
-    /**
-     * @param string $expression
-     * @param SplFixedArray<BaseExpression> $bindings
-     */
-    public function compileRaw(string $expression, iterable $bindings = []): ?string
+    public function compilePaging(?LimitClause $limitClause, ?OffsetClause $offsetClause): ?string
     {
-        $expression = trim($expression, " \t\n\r\0\x0B,");
-        return Helper::replaceAll($expression, static::ParameterPlaceholder, function ($index) use ($bindings) {
-            return $this->compileExpression($bindings[$index], false);
-        });
+        $resolvedPaging = null;
+        if ($limitClause && $limitClause->hasLimit()) {
+            $limit = $limitClause->getLimit();
+            if ($offsetClause && $offsetClause->hasOffset()) {
+                $offset = $offsetClause->getOffset();
+                $resolvedPaging = "LIMIT $offset, $limit";
+            }
+            else $resolvedPaging = "LIMIT $limit";
+        } elseif ($offsetClause && $offsetClause->hasOffset()) {
+            $offset = $offsetClause->getOffset();
+            $resolvedPaging = "LIMIT $offset, " . static::MaxValue;
+        }
+
+        return $resolvedPaging;
+    }
+
+    /**
+     * @param CombineClause[] $combines
+     */
+    public function compileCombine(iterable $combines)
+    {
+        $result = null;
+        $index = 0;
+        foreach($combines as $combine) {
+            if($index > 0) $result .= ' ';
+
+            $result .= CombineType::syntaxOf($combine->getOperation());
+            if($combine->isAll()) {
+                $result .= ' ALL';
+            }
+
+            $result .= ' ' . $this->compileQuery($combine->getQuery());
+            $index++;
+        }
+
+        return $result;
+    }
+
+    /**
+     * @param AbstractFrom[] $tables
+     */
+    public function compileCte(iterable $tables)
+    {
+        $result = null;
+        
+        $index = 0;
+        foreach($tables as $fromClause) {
+            if($index > 0) $result .= ', ';
+            else $result .= 'WITH ';
+
+            $result .= $fromClause->getAlias();
+
+            if($fromClause instanceof FromClause) {
+                $query = $fromClause->getTable();
+                $result .= ' AS (' . $this->compileQuery($query) . ')';
+            }
+            elseif($fromClause instanceof AdHocTableFromClause) {
+                $result .= '(';
+                $first = true;
+                foreach($fromClause->getColumns() as $column) {
+                    if(!$first) $result .= ', ';
+                    $result .= $this->wrapIdentifier($column);
+                }
+                $result .= ') AS (' . $this->compileAdHocTable($fromClause, false) . ')';
+            }
+            $index++;
+        }
+
+        return $result;
+    }
+
+    public function compileAdHocTable(AdHocTableFromClause $table, bool $withAlias = true)
+    {
+        $columns = $table->getColumns();
+        $values = $table->getValues();
+
+        $result = null;
+        $first = true;
+        foreach ($values as $row) {
+            if (!$first) {
+                $result .= ' UNION ALL ';
+            }
+
+            $result .= 'SELECT ';
+            $iteration = 0;
+            foreach ($row as $index => $value) {
+                $resolvedValue = null;
+                if ($value instanceof BaseExpression) {
+                    $resolvedValue = $this->compileExpression($value, false);
+                } elseif ($value instanceof Query) {
+                    $resolvedValue = '(' . $this->compileQuery($value) . ')';
+                }
+
+                if ($first && $withAlias) {
+                    $resolvedValue .= ' AS ' . $this->wrapIdentifier($columns[$index]);
+                }
+
+                if ($iteration > 0) {
+                    $result .= ', ';
+                }
+
+                $result .= $resolvedValue;
+                if (static::FromTableRequired) {
+                    $result .= ' FROM DUAL';
+                }
+                $iteration++;
+            }
+
+            $first = false;
+        }
+        
+        return $result;
+    }
+
+    public function compileInsertQuery(Query $query): ?string
+    {
+        $from = $query->getOneComponent(ComponentType::From);
+        if(empty($from)) {
+            throw new InvalidArgumentException(
+                "Insert query does not have table reference"
+            );
+        }
+
+        $values = $query->getOneComponent(ComponentType::Insert);
+        if(empty($values)) {
+            throw new InvalidArgumentException(
+                "Insert query does not have value"
+            );
+        }
+        
+        $resolvedTable = null;
+        if($from instanceof FromClause) {
+            $table = $from->getTable();
+            $resolvedTable = $this->wrapIdentifier($table);
+        }
+        elseif($from instanceof RawFromClause) {
+            $expression = $from->getExpression();
+            $bindings = $from->getBindings();
+            $resolvedTable = $this->compileRaw($expression, $bindings);
+        }
+        else {
+            $class = Helper::getType($from);
+            throw new InvalidArgumentException(
+                "Could not resolve '$class' for insert query"
+            );
+        }
+
+        $result = "INSERT INTO $resolvedTable ";
+        if($values instanceof InsertClause) {
+            $result .= '(';
+            $index = 0;
+            foreach($values->getColumns() as $column) {
+                if($index > 0) {
+                    $result .= ', ';
+                }
+
+                $result .= $this->wrapIdentifier($column);
+                $index++;
+            }
+            $result .= ') VALUES ';
+
+            $first = true;
+            foreach ($values->getValues() as $row) {
+                if (!$first) {
+                    $result .= ', ';
+                }
+
+                $result .= '(';
+                $index = 0;
+                foreach ($row as $value) {
+                    $resolvedValue = null;
+                    if ($value instanceof BaseExpression) {
+                        $resolvedValue = $this->compileExpression($value, false);
+                    } elseif ($value instanceof Query) {
+                        $resolvedValue = '(' . $this->compileQuery($value) . ')';
+                    }
+
+                    if ($index > 0) {
+                        $result .= ', ';
+                    }
+
+                    $result .= $resolvedValue;
+                    $index++;
+                }
+                $result .= ')';
+
+                $first = false;
+            }
+        }
+        elseif($values instanceof InsertQueryClause) {
+            $columns = $values->getColumns();
+            if(!empty($columns)) {
+                $result .= '(';
+                $index = 0;
+                foreach($columns as $column) {
+                    if($index > 0) {
+                        $result .= ', ';
+                    }
+
+                    $result .= $this->wrapIdentifier($column);
+                    $index++;
+                }
+                $result .= ') ';
+            }
+
+            $query = $values->getQuery();
+            $result .= $this->compileQuery($query);
+        }
+
+        return $result;
+    }
+
+    public function compileUpdateQuery(Query $query): ?string
+    {
+        $from = null;
+        $joins = [];
+        $where = [];
+        $orderBy = [];
+        $limit = null;
+        $offset = null;
+        $update = null;
+
+        foreach ($query->getComponents() as $component) {
+            switch ($component->getComponentType()) {
+                case ComponentType::From:
+                    $from = $component;
+                    break;
+                case ComponentType::Join:
+                    $joins[] = $component;
+                    break;
+                case ComponentType::Where:
+                    $where[] = $component;
+                    break;
+                case ComponentType::GroupBy:
+                    $groupBy[] = $component;
+                    break;
+                case ComponentType::Having:
+                    $havings[] = $component;
+                    break;
+                case ComponentType::OrderBy:
+                    $orderBy[] = $component;
+                    break;
+                case ComponentType::Limit:
+                    $limit = $component;
+                    break;
+                case ComponentType::Offset:
+                    $offset = $component;
+                    break;
+                case ComponentType::Update:
+                    $update = $component;
+                    break;
+            }
+        }
+
+        if(empty($from)) {
+            throw new InvalidArgumentException(
+                "Table not specified!"
+            );
+        }
+
+        if(empty($update)) {
+            throw new InvalidArgumentException(
+                "Update value not specified!"
+            );
+        }
+
+        $result = 'UPDATE ' . $this->compileFrom($from);
+
+        $resolvedJoin = $this->compileJoin($joins);
+        if($resolvedJoin) {
+            $result .= ' ' . $resolvedJoin;
+        }
+
+        $expressionResolver = function ($expression) {
+
+            if ($expression instanceof BaseExpression) {
+                return $this->compileExpression($expression, false);
+            } elseif ($expression instanceof Query) {
+                $resolvedValue = $this->compileQuery($expression);
+                $resolvedValue = "($resolvedValue)";
+                return $resolvedValue;
+            }
+        };
+
+        if($update instanceof UpdateClause) {
+            $result .= ' SET ';
+            $first = true;
+            foreach($update->getValue() as $column => $value) {
+                if(!$first) $result .= ', ';
+                $result .= $this->wrapIdentifier($column);
+                $result .= ' = ';
+                $result .= $expressionResolver($value);
+                $first = false;
+            }
+        }
+
+        $resolvedWhere = $this->compileWhere($where);
+        if($resolvedWhere) {
+            $result .= ' ' . $resolvedWhere;
+        }
+
+        $resolvedOrderBy = $this->compileOrderBy($orderBy);
+        if($resolvedOrderBy) {
+            $result .= ' ' . $resolvedOrderBy;
+        }
+
+        $resolvedPaging = $this->compilePaging($limit, $offset);
+        if($resolvedPaging) {
+            $result .= ' ' . $resolvedPaging;
+        }
+
+        return $result;
+    }
+
+    public function compileDeleteQuery(Query $query): ?string
+    {
+        $from = null;
+        $joins = [];
+        $where = [];
+        $orderBy = [];
+        $limit = null;
+        $offset = null;
+
+        foreach ($query->getComponents() as $component) {
+            switch ($component->getComponentType()) {
+                case ComponentType::From:
+                    $from = $component;
+                    break;
+                case ComponentType::Join:
+                    $joins[] = $component;
+                    break;
+                case ComponentType::Where:
+                    $where[] = $component;
+                    break;
+                case ComponentType::OrderBy:
+                    $orderBy[] = $component;
+                    break;
+                case ComponentType::Limit:
+                    $limit = $component;
+                    break;
+                case ComponentType::Offset:
+                    $offset = $component;
+                    break;
+            }
+        }
+
+        if(empty($from)) {
+            throw new InvalidArgumentException(
+                "Table not specified!"
+            );
+        }
+
+        $result = 'DELETE FROM ' . $this->compileFrom($from);
+
+        $resolvedJoin = $this->compileJoin($joins);
+        if($resolvedJoin) {
+            $result .= ' ' . $resolvedJoin;
+        }
+
+        $resolvedWhere = $this->compileWhere($where);
+        if($resolvedWhere) {
+            $result .= ' ' . $resolvedWhere;
+        }
+
+        $resolvedOrderBy = $this->compileOrderBy($orderBy);
+        if($resolvedOrderBy) {
+            $result .= ' ' . $resolvedOrderBy;
+        }
+
+        $resolvedPaging = $this->compilePaging($limit, $offset);
+        if($resolvedPaging) {
+            $result .= ' ' . $resolvedPaging;
+        }
+
+        return $result;
     }
 
     public function compileExpression(BaseExpression $expression, bool $withAlias = true): ?string
@@ -887,6 +962,18 @@ abstract class BaseCompiler
         } elseif ($expression instanceof Variable) {
             return $this->compileVariable($expression);
         }
+    }
+
+    /**
+     * @param string $expression
+     * @param SplFixedArray<BaseExpression> $bindings
+     */
+    public function compileRaw(string $expression, iterable $bindings = []): ?string
+    {
+        $expression = trim($expression, " \t\n\r\0\x0B,");
+        return Helper::replaceAll($expression, static::ParameterPlaceholder, function ($index) use ($bindings) {
+            return $this->compileExpression($bindings[$index], false);
+        });
     }
 
     public function compileLiteral(Literal $literal): ?string
@@ -933,29 +1020,7 @@ abstract class BaseCompiler
 
         return $columnExression;
     }
-
-    public function compileTable(string $name): ?string
-    {
-        $result = trim($name);
-        if (empty($result)) {
-            return null;
-        }
-
-        $aliasSplit = array_map(
-            function ($item) {
-                return $this->wrapIdentifier($item);
-            },
-            $this->aliasFinder($result)
-        );
-
-        $result = $aliasSplit[0];
-        if (isset($aliasSplit[1])) {
-            $result .= ' AS ' . $aliasSplit[1];
-        }
-
-        return $result;
-    }
-
+    
     /**
      * @param \DateTime|string $value
      */

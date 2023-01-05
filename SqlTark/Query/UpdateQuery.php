@@ -11,12 +11,16 @@ use SqlTark\Helper;
 use SqlTark\Query\Interfaces\ConditionInterface;
 use SqlTark\Query\Traits\BasicFromTrait;
 use SqlTark\Query\Traits\ConditionTrait;
+use SqlTark\Query\Traits\JoinTrait;
 use SqlTark\Query\Traits\OrderTrait;
 use SqlTark\Query\Traits\PagingTrait;
 
+/**
+ * @deprecated Use Query.asUpdate instead
+ */
 class UpdateQuery extends BaseQuery implements ConditionInterface
 {
-    use BasicFromTrait, ConditionTrait, PagingTrait, OrderTrait;
+    use BasicFromTrait, JoinTrait, ConditionTrait, PagingTrait, OrderTrait;
 
     /**
      * @var int $method

@@ -122,8 +122,7 @@ abstract class BaseQuery implements QueryInterface
      */
     public function clearComponents(int $componentType)
     {
-        if(!is_null($this->components))
-        {
+        if(!is_null($this->components)) {
             foreach ($this->components as $value) {
                 if ($value->getComponentType() == $componentType) {
                     $this->components->detach($value);
@@ -215,14 +214,12 @@ abstract class BaseQuery implements QueryInterface
     /**
      * @return $this Self object
      */
-    public function when(bool $condition, ?callable $whenTrue, ?callable $whenFalse)
+    public function when(bool $condition, ?callable $whenTrue, ?callable $whenFalse = null)
     {
-        if($condition && !is_null($whenTrue))
-        {
+        if($condition && !is_null($whenTrue)) {
             return $whenTrue($this);
         }
-        elseif(!$condition && !is_null($whenFalse))
-        {
+        elseif(!$condition && !is_null($whenFalse)) {
             return $whenFalse($this);
         }
 

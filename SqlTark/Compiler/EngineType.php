@@ -8,7 +8,7 @@ final class EngineType
 {
     public const Generic = 1;
     public const MySql = 2;
-    public const SqlServer = 3;
+    public const SQLServer = 3;
     public const PostgreSql = 4;
 
     public static function nameOf(int $engine): ?string
@@ -18,8 +18,8 @@ final class EngineType
                 return 'Generic';
             case self::MySql:
                 return 'MySql';
-            case self::SqlServer:
-                return 'SqlServer';
+            case self::SQLServer:
+                return 'SQLServer';
             case self::PostgreSql:
                 return 'PostgreSql';
         }

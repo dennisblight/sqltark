@@ -24,7 +24,7 @@ abstract class AbstractComponent
     }
 
     /**
-     * @return static Clone of current object
+     * @return $this Self object
      */
     public function setComponentType(int $value)
     {

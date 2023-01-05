@@ -4,12 +4,11 @@ declare(strict_types=1);
 
 namespace SqlTark;
 
+use PDO;
 use PDOStatement;
 use SqlTark\Query\Query;
 use InvalidArgumentException;
-use SqlTark\Query\DeleteQuery;
-use SqlTark\Query\InsertQuery;
-use SqlTark\Query\UpdateQuery;
+use SqlTark\Query\MethodType;
 use SqlTark\Compiler\BaseCompiler;
 use SqlTark\Component\ComponentType;
 use SqlTark\Connection\AbstractConnection;
@@ -31,11 +30,6 @@ class XQuery extends Query
      * @var bool $resetOnExecute
      */
     private $resetOnExecute = true;
-
-    /**
-     * @var int $transactionCount
-     */
-    private $transactionCount = 0;
 
     /**
      * @var $onExecuteCallback
@@ -89,33 +83,99 @@ class XQuery extends Query
         return $this;
     }
 
-    /**
-     * @return PDOStatement Statement
-     */
-    public function prepare(string $sql)
+    public function compile(?QueryInterface $query = null, int $method = MethodType::Auto): ?string 
     {
-        $pdo = $this->connection->getPDO();
-        if($this->resetOnExecute) {
-            $this->reset();
-        }
-        return $pdo->prepare($sql);
+        return $this->compiler->compileQuery($query ?? $this, $method);
     }
 
     /**
      * @return PDOStatement Statement
      */
-    public function execute(string $sql)
+    public function prepare($query = null, array $params = [], array $types = [])
     {
-        try
-        {
-            $statement = $this->prepare($sql);
+        if(func_num_args() === 0) {
+            $query = $this->compiler->compileQuery($this);
+        }
+
+        if ($query instanceof QueryInterface) {
+            $sql = $this->compiler->compileQuery($query);
+        }
+        elseif (is_string($query)) {
+            $sql = $query;
+        }
+
+        if (empty($sql)) {
+            $class = Helper::getType($query);
+            throw new InvalidArgumentException(
+                "Could not resolve '$class'"
+            );
+        }
+
+        $pdo = $this->connection->getPDO();
+        if($this->resetOnExecute) {
+            $this->reset();
+        }
+
+        $statement = $pdo->prepare($sql);
+        foreach($params as $index => $value) {
+            $type = $this->determineType($index, $value, $types);
+            $statement->bindValue($index, $value, $type);
+        }
+
+        return $statement;
+    }
+
+    private function determineType($index, $value, array $types)
+    {
+        if(array_key_exists($index, $types)) {
+            return $types[$index];
+        }
+
+        switch(Helper::getType($value)) {
+            case 'bool':
+            return PDO::PARAM_BOOL;
+            
+            case 'integer':
+            return PDO::PARAM_INT;
+            
+            case 'null':
+            return PDO::PARAM_NULL;
+        }
+
+        return PDO::PARAM_STR;
+    }
+
+    /**
+     * @return PDOStatement Statement
+     */
+    public function execute($query = null, array $params = [], array $types = [])
+    {
+        if(func_num_args() === 0) {
+            $query = $this->compiler->compileQuery($query ?? $this);
+        }
+
+        if ($query instanceof QueryInterface) {
+            $sql = $this->compiler->compileQuery($query);
+        }
+        elseif (is_string($query)) {
+            $sql = $query;
+        }
+
+        if (empty($sql)) {
+            $class = Helper::getType($query);
+            throw new InvalidArgumentException(
+                "Could not resolve '$class'"
+            );
+        }
+
+        try {
+            $statement = $this->prepare($sql, $params, $types);
             $statement->execute();
             $this->triggerOnExecute($sql, $statement->errorInfo(), $statement);
 
             return $statement;
         }
-        catch(\PDOException $ex)
-        {
+        catch(\PDOException $ex) {
             if(isset($statement)) {
                 $this->triggerOnExecute($sql, $statement->errorInfo(), $statement);
             }
@@ -126,40 +186,15 @@ class XQuery extends Query
         }
     }
 
-    /**
-     * @return PDOStatement Statement
-     */
-    public function executeQuery(QueryInterface $query)
-    {
-        if ($query instanceof Query) {
-            $sql = $this->compiler->compileQuery($query);
-        } elseif ($query instanceof InsertQuery) {
-            $sql = $this->compiler->compileInsertQuery($query);
-        } elseif ($query instanceof UpdateQuery) {
-            $sql = $this->compiler->compileUpdateQuery($query);
-        } elseif ($query instanceof DeleteQuery) {
-            $sql = $this->compiler->compileDeleteQuery($query);
-        }
-
-        if (empty($sql)) {
-            $class = Helper::getType($query);
-            throw new InvalidArgumentException(
-                "Could not resolve '$class'"
-            );
-        }
-
-        return $this->execute($sql);
-    }
-
     public function insert(iterable $columns, ?iterable $values = null)
     {
-        $query = call_user_func_array('parent::insert', func_get_args());
+        $query = call_user_func_array('parent::asInsert', func_get_args());
         return $this->executeQuery($query);
     }
 
     public function insertQuery(Query $query, ?iterable $columns = null)
     {
-        $query = call_user_func_array('parent::insertQuery', func_get_args());
+        $query = call_user_func_array('parent::asInsertQuery', func_get_args());
         return $this->executeQuery($query);
     }
 
@@ -168,13 +203,13 @@ class XQuery extends Query
      */
     public function update($value)
     {
-        $query = call_user_func_array('parent::update', func_get_args());
+        $query = call_user_func_array('parent::asUpdate', func_get_args());
         return $this->executeQuery($query);
     }
 
     public function delete()
     {
-        $query = call_user_func_array('parent::delete', func_get_args());
+        $query = call_user_func_array('parent::asDelete', func_get_args());
         return $this->executeQuery($query);
     }
 
@@ -185,10 +220,10 @@ class XQuery extends Query
             $this->limit(1);
         }
 
-        $statement = $this->executeQuery($this);
+        $statement = $this->executeQuery($this, MethodType::Select);
         $result = $statement->fetch();
         $statement->closeCursor();
-        
+
         if(!$this->resetOnExecute) {
             if(empty($limitComponent)) {
                 $this->clearComponents(ComponentType::Limit);
@@ -202,7 +237,7 @@ class XQuery extends Query
 
     public function getAll()
     {
-        $statement = $this->executeQuery($this);
+        $statement = $this->executeQuery($this, MethodType::Select);
         $result = $statement->fetchAll();
         $statement->closeCursor();
 
@@ -216,7 +251,7 @@ class XQuery extends Query
             $this->limit(1);
         }
 
-        $statement = $this->executeQuery($this);
+        $statement = $this->executeQuery($this, MethodType::Select);
         $result = $statement->fetchColumn($columnIndex);
         $statement->closeCursor();
         
@@ -237,43 +272,27 @@ class XQuery extends Query
     }
 
     /**
-     * @return bool|PDOStatement
+     * @return bool
      */
-    public function transaction()
+    public function transaction(): bool
     {
-        if($this->transactionCount++ === 0) {
-            return $this->connection->getPDO()->beginTransaction();
-        }
-
-        $this->execute("SAVEPOINT __trx{$this->transactionCount}__");
-        return $this->transactionCount >= 0;
+        return $this->connection->transaction();
     }
 
     /**
-     * @return bool|PDOStatement
+     * @return bool
      */
-    public function commit()
+    public function commit(): bool
     {
-        if(--$this->transactionCount === 0) {
-            return $this->connection->getPDO()->commit();
-        }
-
-        return $this->transactionCount >= 0;
+        return $this->connection->commit();
     }
 
     /**
-     * @return bool|PDOStatement
+     * @return bool
      */
-    public function rollback()
+    public function rollback(): bool
     {
-        if($this->transactionCount > 1) {
-            $this->execute("ROLLBACK TO __trx{$this->transactionCount}__");
-            $this->transactionCount--;
-            return true;
-        }
-
-        $this->transactionCount--;
-        return $this->connection->getPDO()->rollBack();
+        return $this->connection->rollback();
     }
 
     /**

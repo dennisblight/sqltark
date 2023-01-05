@@ -6,12 +6,12 @@ namespace SqlTark\Connection;
 
 use PDO;
 
-class MySqlConnection extends AbstractConnection
+class SQLServerConnection extends AbstractConnection
 {
     /** @var PDO $pdo */
     protected $pdo = null;
 
-    protected const Driver = 'mysql';
+    protected const Driver = 'sqlsrv';
 
     protected $host       = 'localhost';
     protected $port       = 3306;
@@ -27,16 +27,10 @@ class MySqlConnection extends AbstractConnection
 
     protected function createDSN(): string
     {
-        $dsn = "mysql:host=$this->host";
-        if(!empty($this->port)) $dsn = "$dsn:$this->port;port=$this->port";
-        $dsn = "$dsn;dbname=$this->database";
+        $dsn = "sqlsrv:Server=$this->host";
+        if(!empty($this->port)) $dsn = "$dsn,$this->port";
+        $dsn = "$dsn;Database=$this->database";
         return $dsn;
-    }
-
-    protected function onConnected()
-    {
-        $this->pdo->exec("SET NAMES '$this->charset' COLLATE '$this->collation'");
-        $this->pdo->exec("SET CHARACTER SET '$this->charset'");
     }
 
     public function trransaction(): bool
@@ -45,7 +39,7 @@ class MySqlConnection extends AbstractConnection
             return $this->getPDO()->beginTransaction();
         }
 
-        $this->getPDO()->exec("SAVEPOINT __trx_{$this->transactionCount}__");
+        $this->getPDO()->exec("SAVE TRANSACTION __trx_{$this->transactionCount}__");
         return $this->transactionCount >= 0;
     }
 
@@ -61,7 +55,7 @@ class MySqlConnection extends AbstractConnection
     public function rollback(): bool
     {
         if($this->transactionCount > 1) {
-            $this->getPDO()->exec("ROLLBACK TO __trx_{$this->transactionCount}__");
+            $this->getPDO()->exec("ROLLBACK TRANSACTION __trx_{$this->transactionCount}__");
             $this->transactionCount--;
             return true;
         }
