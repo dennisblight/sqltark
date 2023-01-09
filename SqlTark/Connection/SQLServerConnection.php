@@ -11,7 +11,7 @@ class SQLServerConnection extends AbstractConnection
     /** @var PDO $pdo */
     protected $pdo = null;
 
-    protected const Driver = 'sqlsrv';
+    protected static $Driver = 'sqlsrv';
 
     protected $host       = 'localhost';
     protected $port       = 3306;

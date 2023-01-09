@@ -6,11 +6,11 @@ namespace SqlTark\Compiler;
 
 class MySqlCompiler extends BaseCompiler
 {
-    public const OpeningIdentifier = '`';
-    public const ClosingIdentifier = '`';
-    public const DummyTable = 'DUAL';
+    public static $OpeningIdentifier = '`';
+    public static $ClosingIdentifier = '`';
+    public static $DummyTable = 'DUAL';
 
-    public const EngineCode = EngineType::MySql;
+    public static $EngineCode = EngineType::MySql;
 
     public function quote($value, bool $quoteLike = false): ?string
     {

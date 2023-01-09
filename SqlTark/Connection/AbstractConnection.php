@@ -13,7 +13,7 @@ abstract class AbstractConnection
     /** @var PDO $pdo */
     protected $pdo = null;
 
-    protected const Driver = '';
+    protected static $Driver = '';
 
     protected $host       = 'localhost';
     protected $port       = null;
@@ -31,7 +31,7 @@ abstract class AbstractConnection
     public function getConfig()
     {
         return [
-            'driver' => static::Driver,
+            'driver' => static::$Driver,
             'host' => $this->host,
             'port' => $this->port,
             'username' => $this->username,
@@ -53,8 +53,8 @@ abstract class AbstractConnection
      */
     public function __construct($config = [])
     {
-        if (!in_array(static::Driver, PDO::getAvailableDrivers(), true)) {
-            $driver = static::Driver;
+        if (!in_array(static::$Driver, PDO::getAvailableDrivers(), true)) {
+            $driver = static::$Driver;
             throw new InvalidArgumentException(
                 "PDO driver '{$driver}' not available"
             );
@@ -132,6 +132,11 @@ abstract class AbstractConnection
     public function rollback(): bool
     {
         return $this->pdo->rollBack();
+    }
+
+    public function resetTransactionState()
+    {
+        $this->transactionCount = 0;
     }
 
     protected function onConnected() { }

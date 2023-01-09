@@ -9,11 +9,11 @@ use SqlTark\Component\OffsetClause;
 
 class SQLServerCompiler extends BaseCompiler
 {
-    public const OpeningIdentifier = '[';
-    public const ClosingIdentifier = ']';
-    public const DummyTable = null;
+    public static $OpeningIdentifier = '[';
+    public static $ClosingIdentifier = ']';
+    public static $DummyTable = null;
 
-    public const EngineCode = EngineType::SQLServer;
+    public static $EngineCode = EngineType::SQLServer;
 
     public function quote($value, bool $quoteLike = false): ?string
     {

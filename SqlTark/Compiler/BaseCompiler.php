@@ -48,16 +48,16 @@ use SqlTark\Query\Query;
 
 abstract class BaseCompiler
 {
-    public const ParameterPlaceholder = '?';
-    public const VariablePrefix = ':';
-    public const OpeningIdentifier = '';
-    public const ClosingIdentifier = '';
-    public const EscapeCharacter = '\\';
-    public const DummyTable = null;
-    public const FromTableRequired = false;
-    public const MaxValue = '18446744073709551615';
+    public static $ParameterPlaceholder = '?';
+    public static $VariablePrefix = ':';
+    public static $OpeningIdentifier = '';
+    public static $ClosingIdentifier = '';
+    public static $EscapeCharacter = '\\';
+    public static $DummyTable = null;
+    public static $FromTableRequired = false;
+    public static $MaxValue = '18446744073709551615';
 
-    public const EngineCode = EngineType::Generic;
+    public static $EngineCode = EngineType::Generic;
     
     public function compileQuery(Query $query, int $method = MethodType::Auto): ?string
     {
@@ -271,8 +271,8 @@ abstract class BaseCompiler
                 .  $this->wrapIdentifier($table->getAlias());
         }
 
-        if (empty($result) && static::FromTableRequired) {
-            $result = static::DummyTable;
+        if (empty($result) && static::$FromTableRequired) {
+            $result = static::$DummyTable;
         }
 
         return $result;
@@ -581,7 +581,7 @@ abstract class BaseCompiler
             else $resolvedPaging = "LIMIT $limit";
         } elseif ($offsetClause && $offsetClause->hasOffset()) {
             $offset = $offsetClause->getOffset();
-            $resolvedPaging = "LIMIT $offset, " . static::MaxValue;
+            $resolvedPaging = "LIMIT $offset, " . static::$MaxValue;
         }
 
         return $resolvedPaging;
@@ -673,7 +673,7 @@ abstract class BaseCompiler
                 }
 
                 $result .= $resolvedValue;
-                if (static::FromTableRequired) {
+                if (static::$FromTableRequired) {
                     $result .= ' FROM DUAL';
                 }
                 $iteration++;
@@ -971,7 +971,7 @@ abstract class BaseCompiler
     public function compileRaw(string $expression, iterable $bindings = []): ?string
     {
         $expression = trim($expression, " \t\n\r\0\x0B,");
-        return Helper::replaceAll($expression, static::ParameterPlaceholder, function ($index) use ($bindings) {
+        return Helper::replaceAll($expression, static::$ParameterPlaceholder, function ($index) use ($bindings) {
             return $this->compileExpression($bindings[$index], false);
         });
     }
@@ -987,13 +987,13 @@ abstract class BaseCompiler
     public function compileVariable(Variable $variable): ?string
     {
         if(is_null($variable->getName())) {
-            return $this->wrapFunction(static::ParameterPlaceholder, $variable->getWrap());
+            return $this->wrapFunction(static::$ParameterPlaceholder, $variable->getWrap());
         }
 
         $result = trim($variable->getName());
 
-        if (isset($result[0]) && $result[0] != static::VariablePrefix) {
-            $result = static::VariablePrefix . $result;
+        if (isset($result[0]) && $result[0] != static::$VariablePrefix) {
+            $result = static::$VariablePrefix . $result;
         }
 
         return $this->wrapFunction($result, $variable->getWrap());
@@ -1042,12 +1042,12 @@ abstract class BaseCompiler
             $item = trim($item);
             if (!empty($item)) {
                 if ($item != '*') {
-                    if ($item[0] != static::OpeningIdentifier) {
-                        $item = static::OpeningIdentifier . $item;
+                    if ($item[0] != static::$OpeningIdentifier) {
+                        $item = static::$OpeningIdentifier . $item;
                     }
 
-                    if ($item[strlen($item) - 1] != static::ClosingIdentifier) {
-                        $item = $item . static::ClosingIdentifier;
+                    if ($item[strlen($item) - 1] != static::$ClosingIdentifier) {
+                        $item = $item . static::$ClosingIdentifier;
                     }
                 }
                 $splitName[] = $item;

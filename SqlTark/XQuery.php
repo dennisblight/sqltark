@@ -79,6 +79,7 @@ class XQuery extends Query
     {
         if(!is_null($this->components)) {
             $this->components->removeAll($this->components);
+            $this->method = MethodType::Select;
         }
         return $this;
     }
