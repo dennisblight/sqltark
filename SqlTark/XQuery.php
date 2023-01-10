@@ -190,13 +190,13 @@ class XQuery extends Query
     public function insert(iterable $columns, ?iterable $values = null)
     {
         $query = call_user_func_array('parent::asInsert', func_get_args());
-        return $this->executeQuery($query);
+        return $this->execute($query);
     }
 
     public function insertQuery(Query $query, ?iterable $columns = null)
     {
         $query = call_user_func_array('parent::asInsertQuery', func_get_args());
-        return $this->executeQuery($query);
+        return $this->execute($query);
     }
 
     /**
@@ -205,13 +205,13 @@ class XQuery extends Query
     public function update($value)
     {
         $query = call_user_func_array('parent::asUpdate', func_get_args());
-        return $this->executeQuery($query);
+        return $this->execute($query);
     }
 
     public function delete()
     {
         $query = call_user_func_array('parent::asDelete', func_get_args());
-        return $this->executeQuery($query);
+        return $this->execute($query);
     }
 
     public function getOne()
@@ -221,9 +221,14 @@ class XQuery extends Query
             $this->limit(1);
         }
 
-        $statement = $this->executeQuery($this, MethodType::Select);
+        $lastMethod = $this->method;
+        $this->method = MethodType::Select;
+
+        $statement = $this->execute($this);
         $result = $statement->fetch();
         $statement->closeCursor();
+
+        $this->method = $lastMethod;
 
         if(!$this->resetOnExecute) {
             if(empty($limitComponent)) {
@@ -238,9 +243,14 @@ class XQuery extends Query
 
     public function getAll()
     {
-        $statement = $this->executeQuery($this, MethodType::Select);
+        $lastMethod = $this->method;
+        $this->method = MethodType::Select;
+
+        $statement = $this->execute($this);
         $result = $statement->fetchAll();
         $statement->closeCursor();
+
+        $this->method = $lastMethod;
 
         return $result;
     }
@@ -252,9 +262,14 @@ class XQuery extends Query
             $this->limit(1);
         }
 
-        $statement = $this->executeQuery($this, MethodType::Select);
+        $lastMethod = $this->method;
+        $this->method = MethodType::Select;
+        
+        $statement = $this->execute($this);
         $result = $statement->fetchColumn($columnIndex);
         $statement->closeCursor();
+
+        $this->method = $lastMethod;
         
         if(!$this->resetOnExecute) {
             if(empty($limitComponent)) {
