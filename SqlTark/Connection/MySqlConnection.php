@@ -11,7 +11,7 @@ class MySqlConnection extends AbstractConnection
     /** @var PDO $pdo */
     protected $pdo = null;
 
-    protected static $Driver = 'mysql';
+    protected const Driver = 'mysql';
 
     protected $host       = 'localhost';
     protected $port       = 3306;
@@ -27,16 +27,16 @@ class MySqlConnection extends AbstractConnection
 
     protected function createDSN(): string
     {
-        $dsn = "mysql:host=$this->host";
-        if(!empty($this->port)) $dsn = "$dsn:$this->port;port=$this->port";
-        $dsn = "$dsn;dbname=$this->database";
+        $dsn = "mysql:host={$this->host}";
+        if(!empty($this->port)) $dsn = "{$dsn}:{$this->port};port={$this->port}";
+        $dsn = "{$dsn};dbname={$this->database}";
         return $dsn;
     }
 
     protected function onConnected()
     {
-        $this->pdo->exec("SET NAMES '$this->charset' COLLATE '$this->collation'");
-        $this->pdo->exec("SET CHARACTER SET '$this->charset'");
+        $this->pdo->exec("SET NAMES '{$this->charset}' COLLATE '{$this->collation}'");
+        $this->pdo->exec("SET CHARACTER SET '{$this->charset}'");
     }
 
     public function trransaction(): bool

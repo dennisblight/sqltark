@@ -4,15 +4,11 @@ declare(strict_types=1);
 
 namespace SqlTark\Query\Traits;
 
-use InvalidArgumentException;
-use SqlTark\Component\AggregateClause;
-use SqlTark\Component\CombineClause;
-use SqlTark\Component\CombineType;
-use SqlTark\Component\ComponentType;
-use SqlTark\Component\FromClause;
 use SqlTark\Helper;
-use SqlTark\Query\MethodType;
 use SqlTark\Query\Query;
+use InvalidArgumentException;
+use SqlTark\Component\FromClause;
+use SqlTark\Component\ComponentType;
 
 trait CteTrait
 {

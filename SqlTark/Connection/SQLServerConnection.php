@@ -11,7 +11,7 @@ class SQLServerConnection extends AbstractConnection
     /** @var PDO $pdo */
     protected $pdo = null;
 
-    protected static $Driver = 'sqlsrv';
+    protected const Driver = 'sqlsrv';
 
     protected $host       = 'localhost';
     protected $port       = 3306;
@@ -27,9 +27,9 @@ class SQLServerConnection extends AbstractConnection
 
     protected function createDSN(): string
     {
-        $dsn = "sqlsrv:Server=$this->host";
-        if(!empty($this->port)) $dsn = "$dsn,$this->port";
-        $dsn = "$dsn;Database=$this->database";
+        $dsn = "sqlsrv:Server={$this->host}";
+        if(!empty($this->port)) $dsn = "{$dsn},{$this->port}";
+        $dsn = "{$dsn};Database={$this->database}";
         return $dsn;
     }
 

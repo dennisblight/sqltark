@@ -61,7 +61,7 @@ class CombineClause extends AbstractComponent
         $self = parent::clone();
 
         $self->query = clone $this->query;
-        $self->value = $this->value;
+        $self->operation = $this->operation;
         $self->all = $this->all;
 
         return $self;
