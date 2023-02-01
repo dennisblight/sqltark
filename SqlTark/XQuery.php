@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace SqlTark;
 
 use PDO;
+use PDOException;
 use PDOStatement;
 use SqlTark\Query\Query;
 use InvalidArgumentException;
@@ -176,7 +177,7 @@ class XQuery extends Query
 
             return $statement;
         }
-        catch(\PDOException $ex) {
+        catch(PDOException $ex) {
             if(isset($statement)) {
                 $this->triggerOnExecute($sql, $statement->errorInfo(), $statement);
             }
@@ -214,7 +215,7 @@ class XQuery extends Query
         return $this->execute($query);
     }
 
-    public function getOne()
+    public function getOne($fetchMode = PDO::FETCH_OBJ)
     {
         $limitComponent = $this->getOneComponent(ComponentType::Limit);
         if (empty($limitComponent)) {
@@ -225,6 +226,12 @@ class XQuery extends Query
         $this->method = MethodType::Select;
 
         $statement = $this->execute($this);
+        if(is_string($fetchMode)) {
+            $statement->setFetchMode(PDO::FETCH_CLASS, $fetchMode);
+        }
+        else {
+            $statement->setFetchMode($fetchMode);
+        }
         $result = $statement->fetch();
         $statement->closeCursor();
 
@@ -241,12 +248,18 @@ class XQuery extends Query
         return $result;
     }
 
-    public function getAll()
+    public function getAll($fetchMode = PDO::FETCH_OBJ)
     {
         $lastMethod = $this->method;
         $this->method = MethodType::Select;
 
         $statement = $this->execute($this);
+        if(is_string($fetchMode)) {
+            $statement->setFetchMode(PDO::FETCH_CLASS, $fetchMode);
+        }
+        else {
+            $statement->setFetchMode($fetchMode);
+        }
         $result = $statement->fetchAll();
         $statement->closeCursor();
 
