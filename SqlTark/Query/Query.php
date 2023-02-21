@@ -9,9 +9,6 @@ use SqlTark\Helper;
 use SqlTark\Query\BaseQuery;
 use InvalidArgumentException;
 use SqlTark\Query\MethodType;
-use SqlTark\Query\DeleteQuery;
-use SqlTark\Query\InsertQuery;
-use SqlTark\Query\UpdateQuery;
 use SqlTark\Query\Traits\CteTrait;
 use SqlTark\Component\UpdateClause;
 use SqlTark\Component\InsertClause;
@@ -65,42 +62,6 @@ class Query extends BaseQuery implements ConditionInterface, HavingInterface
         $self->havingFlag = $this->havingFlag;
 
         return $self;
-    }
-
-    /**
-     * @return InsertQuery
-     */
-    public function insert(iterable $columns, ?iterable $values = null)
-    {
-        $result = InsertQuery::fromQuery($this);
-        return call_user_func_array([$result, 'withValues'], func_get_args());
-    }
-
-    /**
-     * @return InsertQuery
-     */
-    public function insertQuery(Query $query, ?iterable $columns = null)
-    {
-        $result = InsertQuery::fromQuery($this);
-        return call_user_func_array([$result, 'withQuery'], func_get_args());
-    }
-
-    /**
-     * @param iterable|object $value
-     * @return UpdateQuery
-     */
-    public function update($value)
-    {
-        $result = UpdateQuery::fromQuery($this);
-        return call_user_func_array([$result, 'withValue'], func_get_args());
-    }
-
-    /**
-     * @return DeleteQuery
-     */
-    public function delete()
-    {
-        return DeleteQuery::fromQuery($this);
     }
 
     /**

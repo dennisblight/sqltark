@@ -4,8 +4,10 @@ declare(strict_types=1);
 
 namespace SqlTark\Compiler;
 
+use InvalidArgumentException;
 use SqlTark\Component\LimitClause;
 use SqlTark\Component\OffsetClause;
+use SqlTark\Helper;
 
 class SQLServerCompiler extends BaseCompiler
 {
@@ -28,6 +30,9 @@ class SQLServerCompiler extends BaseCompiler
         } elseif ($value instanceof \DateTime) {
             return "'" . $value->format('Y-m-d H:i:s') . "'";
         }
+
+        $type = Helper::getType($value);
+        throw new InvalidArgumentException("Could not resolve value from '{$type}' type.");
     }
 
     public function compilePaging(?LimitClause $limitClause, ?OffsetClause $offsetClause): ?string

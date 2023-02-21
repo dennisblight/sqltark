@@ -8,6 +8,7 @@ use SqlTark\Component\OrderClause;
 use SqlTark\Component\RandomOrder;
 use SqlTark\Component\ComponentType;
 use SqlTark\Helper;
+use SqlTark\Query\BaseQuery;
 
 trait OrderTrait
 {

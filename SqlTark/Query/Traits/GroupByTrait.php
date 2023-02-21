@@ -12,6 +12,7 @@ use SqlTark\Component\RawColumn;
 use SqlTark\Expressions;
 use SqlTark\Expressions\BaseExpression;
 use SqlTark\Helper;
+use SqlTark\Query\BaseQuery;
 
 trait GroupByTrait
 {

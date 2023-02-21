@@ -23,6 +23,8 @@ final class EngineType
             case self::PostgreSql:
                 return 'PostgreSql';
         }
+
+        return null;
     }
 
     private function __construct()

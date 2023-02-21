@@ -62,6 +62,8 @@ final class ComponentType
             case self::Update:
                 return 'Update';
         }
+
+        return null;
     }
 
     private function __construct()

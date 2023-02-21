@@ -82,7 +82,7 @@ abstract class BaseCompiler
         );
     }
 
-    public function compileSelectQuery(Query $query): ?string
+    public function compileSelectQuery(Query $query): string
     {
         $cte = [];
         $selects = [];
@@ -144,42 +144,42 @@ abstract class BaseCompiler
         $result .= $this->compileSelect($selects, $query->isDistict());
 
         $resolvedFrom = $this->compileFrom($from);
-        if($resolvedFrom) {
+        if(is_string($resolvedFrom)) {
             $result .= ' FROM ' . $resolvedFrom;
         }
 
         $resolvedJoin = $this->compileJoin($joins);
-        if($resolvedJoin) {
+        if(is_string($resolvedJoin)) {
             $result .= ' ' . $resolvedJoin;
         }
 
         $resolvedWhere = $this->compileWhere($where);
-        if($resolvedWhere) {
+        if(is_string($resolvedWhere)) {
             $result .= ' ' . $resolvedWhere;
         }
 
         $resolvedGroupBy = $this->compileGroupBy($groupBy);
-        if($resolvedGroupBy) {
+        if(is_string($resolvedGroupBy)) {
             $result .= ' ' . $resolvedGroupBy;
         }
 
         $resolvedHaving = $this->compileHaving($havings);
-        if($resolvedHaving) {
+        if(is_string($resolvedHaving)) {
             $result .= ' ' . $resolvedHaving;
         }
 
         $resolvedOrderBy = $this->compileOrderBy($orderBy);
-        if($resolvedOrderBy) {
+        if(is_string($resolvedOrderBy)) {
             $result .= ' ' . $resolvedOrderBy;
         }
 
         $resolvedPaging = $this->compilePaging($limit, $offset);
-        if($resolvedPaging) {
+        if(is_string($resolvedPaging)) {
             $result .= ' ' . $resolvedPaging;
         }
 
         $resolvedCombine = $this->compileCombine($combines);
-        if($resolvedCombine) {
+        if(is_string($resolvedCombine)) {
             $result .= ' ' . $resolvedCombine;
         }
 
@@ -189,7 +189,7 @@ abstract class BaseCompiler
     /**
      * @param AbstractColumn[] $columns
      */
-    public function compileSelect(iterable $columns, bool $isDisctinct = false): ?string
+    public function compileSelect(iterable $columns, bool $isDisctinct = false): string
     {
         $result = $this->compileColumns($columns);
         if (empty($result)) {
@@ -205,7 +205,7 @@ abstract class BaseCompiler
     /**
      * @param AbstractColumn[] $columns
      */
-    public function compileColumns(iterable $columns, $withAlias = true): ?string
+    public function compileColumns(iterable $columns, $withAlias = true): string
     {
         $expressionResolver = function ($expression) use ($withAlias) {
 
@@ -278,7 +278,7 @@ abstract class BaseCompiler
         return $result;
     }
 
-    public function compileTable(string $name): ?string
+    public function compileTable(string $name): string
     {
         $result = trim($name);
         if (empty($result)) {
@@ -345,7 +345,8 @@ abstract class BaseCompiler
 
             if ($expression instanceof BaseExpression) {
                 return $this->compileExpression($expression, false);
-            } elseif ($expression instanceof Query) {
+            }
+            elseif ($expression instanceof Query) {
                 $resolvedValue = $this->compileQuery($expression);
                 if ($wrapQuery) $resolvedValue = "($resolvedValue)";
                 return $resolvedValue;
@@ -368,7 +369,8 @@ abstract class BaseCompiler
                 if ($condition->getNot()) {
                     $resolvedCondition = "NOT ($resolvedCondition)";
                 }
-            } elseif ($condition instanceof BetweenCondition) {
+            }
+            elseif ($condition instanceof BetweenCondition) {
                 $column = $condition->getColumn();
                 $lower = $condition->getLower();
                 $higher = $condition->getHigher();
@@ -383,18 +385,21 @@ abstract class BaseCompiler
                 }
 
                 $resolvedCondition .= " BETWEEN ($resolvedLower AND $resolvedHigher)";
-            } elseif ($condition instanceof ExistsCondition) {
+            }
+            elseif ($condition instanceof ExistsCondition) {
                 $query = $condition->getQuery();
                 $resolvedQuery = $this->compileQuery($query);
 
                 $resolvedCondition = $condition->getNot() ? 'NOT EXISTS' : 'EXISTS';
                 $resolvedCondition .= "($resolvedQuery)";
-            } elseif ($condition instanceof NullCondition) {
+            }
+            elseif ($condition instanceof NullCondition) {
                 $column = $condition->getColumn();
 
                 $resolvedCondition = $expressionResolver($column);
                 $resolvedCondition .= $condition->getNot() ? ' IS NOT NULL' : ' IS NULL';
-            } elseif ($condition instanceof LikeCondition) {
+            }
+            elseif ($condition instanceof LikeCondition) {
                 $column = $condition->getColumn();
                 $resolvedColumn = $expressionResolver($column);
 
@@ -434,7 +439,8 @@ abstract class BaseCompiler
                 if ($escape) {
                     $resolvedCondition .= " ESCAPE " . $this->quote($escape);
                 }
-            } elseif ($condition instanceof InCondition) {
+            }
+            elseif ($condition instanceof InCondition) {
                 $column = $condition->getColumn();
                 $values = $condition->getValues();
 
@@ -454,13 +460,15 @@ abstract class BaseCompiler
                 $resolvedCondition = $resolvedColumn;
                 $resolvedCondition .= $condition->getNot() ? ' NOT IN ' : ' IN ';
                 $resolvedCondition .= "($resolvedValues)";
-            } elseif ($condition instanceof GroupCondition) {
+            }
+            elseif ($condition instanceof GroupCondition) {
                 $clauses = $condition->getCondition()->getComponents($type);
                 $resolvedCondition = $this->compileConditions($clauses);
                 if(count($clauses) > 1 || (count($clauses) == 1 && $clauses[0] instanceof RawCondition)) {
                     $resolvedCondition = "($resolvedCondition)";
                 }
-            } elseif ($condition instanceof RawCondition) {
+            }
+            elseif ($condition instanceof RawCondition) {
                 $resolvedCondition = $this->compileRaw(
                     $condition->getExpression(),
                     $condition->getBindings()
@@ -685,7 +693,7 @@ abstract class BaseCompiler
         return $result;
     }
 
-    public function compileInsertQuery(Query $query): ?string
+    public function compileInsertQuery(Query $query): string
     {
         $from = $query->getOneComponent(ComponentType::From);
         if(empty($from)) {
@@ -885,7 +893,7 @@ abstract class BaseCompiler
         return $result;
     }
 
-    public function compileDeleteQuery(Query $query): ?string
+    public function compileDeleteQuery(Query $query): string
     {
         $from = null;
         $joins = [];
@@ -948,7 +956,7 @@ abstract class BaseCompiler
         return $result;
     }
 
-    public function compileExpression(BaseExpression $expression, bool $withAlias = true): ?string
+    public function compileExpression(BaseExpression $expression, bool $withAlias = true): string
     {
         if ($expression instanceof Literal) {
             return $this->compileLiteral($expression);
@@ -962,13 +970,16 @@ abstract class BaseCompiler
         } elseif ($expression instanceof Variable) {
             return $this->compileVariable($expression);
         }
+
+        $type = Helper::getType($expression);
+        throw new InvalidArgumentException("Could not resolve expression from '{$type}' type.");
     }
 
     /**
      * @param string $expression
      * @param SplFixedArray<BaseExpression> $bindings
      */
-    public function compileRaw(string $expression, iterable $bindings = []): ?string
+    public function compileRaw(string $expression, iterable $bindings = []): string
     {
         $expression = trim($expression, " \t\n\r\0\x0B,");
         return Helper::replaceAll($expression, static::ParameterPlaceholder, function ($index) use ($bindings) {
@@ -976,7 +987,7 @@ abstract class BaseCompiler
         });
     }
 
-    public function compileLiteral(Literal $literal): ?string
+    public function compileLiteral(Literal $literal): string
     {
         $value = $literal->getValue();
         $result = $this->quote($value);
@@ -984,7 +995,7 @@ abstract class BaseCompiler
         return $this->wrapFunction($result, $literal->getWrap());
     }
 
-    public function compileVariable(Variable $variable): ?string
+    public function compileVariable(Variable $variable): string
     {
         if(is_null($variable->getName())) {
             return $this->wrapFunction(static::ParameterPlaceholder, $variable->getWrap());
@@ -999,7 +1010,7 @@ abstract class BaseCompiler
         return $this->wrapFunction($result, $variable->getWrap());
     }
 
-    public function compileColumn(Column $column, bool $withAlias = true): ?string
+    public function compileColumn(Column $column, bool $withAlias = true): string
     {
         $result = trim($column->getName());
         if (empty($result) || $result == '*') {
@@ -1026,16 +1037,16 @@ abstract class BaseCompiler
      */
     public abstract function quote($value, bool $quoteLike = false): ?string;
 
-    protected function wrapFunction(string $value, ?string $wrapper): ?string
+    protected function wrapFunction(string $value, ?string $wrapper): string
     {
-        if ($wrapper) {
+        if (is_string($wrapper)) {
             return $wrapper . "($value)";
         }
 
         return $value;
     }
 
-    protected function wrapIdentifier(string $value): ?string
+    protected function wrapIdentifier(string $value): string
     {
         $splitName = [];
         foreach (explode('.', $value) as $item) {

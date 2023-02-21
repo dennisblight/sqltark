@@ -4,6 +4,9 @@ declare(strict_types=1);
 
 namespace SqlTark\Compiler;
 
+use InvalidArgumentException;
+use SqlTark\Helper;
+
 class MySqlCompiler extends BaseCompiler
 {
     public const OpeningIdentifier = '`';
@@ -12,7 +15,7 @@ class MySqlCompiler extends BaseCompiler
 
     public const EngineCode = EngineType::MySql;
 
-    public function quote($value, bool $quoteLike = false): ?string
+    public function quote($value, bool $quoteLike = false): string
     {
         if (is_string($value)) {
             $result = str_replace(
@@ -37,5 +40,8 @@ class MySqlCompiler extends BaseCompiler
         } elseif ($value instanceof \DateTime) {
             return "'" . $value->format('Y-m-d H:i:s') . "'";
         }
+        
+        $type = Helper::getType($value);
+        throw new InvalidArgumentException("Could not resolve value from '{$type}' type.");
     }
 }

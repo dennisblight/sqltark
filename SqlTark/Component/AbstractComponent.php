@@ -23,6 +23,8 @@ abstract class AbstractComponent
         return ComponentType::nameOf($this->componentType);
     }
 
+    final public function __construct() { }
+
     /**
      * @return $this Self object
      */

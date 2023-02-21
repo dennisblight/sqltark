@@ -189,6 +189,9 @@ abstract class BaseQuery implements QueryInterface
         return $component->getComponentType() == $componentType;
     }
 
+    /**
+     * @return static Clone of current object
+     */
     public function __clone()
     {
         return $this->clone();

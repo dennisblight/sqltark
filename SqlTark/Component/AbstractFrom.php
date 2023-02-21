@@ -7,7 +7,7 @@ namespace SqlTark\Component;
 abstract class AbstractFrom extends AbstractComponent
 {
     /**
-     * @var string $alias
+     * @var ?string $alias
      */
     protected $alias;
 

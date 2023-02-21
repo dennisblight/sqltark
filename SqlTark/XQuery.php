@@ -5,25 +5,23 @@ declare(strict_types=1);
 namespace SqlTark;
 
 use PDO;
-use PDOException;
 use PDOStatement;
 use SqlTark\Query\Query;
 use InvalidArgumentException;
 use SqlTark\Query\MethodType;
 use SqlTark\Compiler\BaseCompiler;
-use SqlTark\Component\ComponentType;
 use SqlTark\Connection\AbstractConnection;
 use SqlTark\Query\Interfaces\QueryInterface;
 
 class XQuery extends Query
 {
     /**
-     * @var AbstractConnection $connection
+     * @var ?AbstractConnection $connection
      */
     private $connection;
 
     /**
-     * @var BaseCompiler $compiler
+     * @var ?BaseCompiler $compiler
      */
     private $compiler;
 
@@ -36,6 +34,16 @@ class XQuery extends Query
      * @var $onExecuteCallback
      */
     private $onExecuteCallback;
+
+    /**
+     * @var ?int $fetchMode
+     */
+    private $fetchMode;
+
+    /**
+     * @var ?array $fetchModeParams
+     */
+    private $fetchModeParams;
 
     public function onExecute(callable $onExecuteCallback)
     {
@@ -51,11 +59,56 @@ class XQuery extends Query
     }
 
     /**
+     * @return $this
+     */
+    public function setConnection(AbstractConnection $connection)
+    {
+        $this->connection = $connection;
+        return $this;
+    }
+
+    /**
      * @return BaseCompiler
      */
     public function getCompiler()
     {
         return $this->compiler;
+    }
+
+    /**
+     * @return $this
+     */
+    public function setCompiler(BaseCompiler $compiler)
+    {
+        $this->compiler = $compiler;
+        return $this;
+    }
+
+    /**
+     * @return ?int
+     */
+    public function getFetchMode()
+    {
+        return $this->fetchMode;
+    }
+
+    /**
+     * @return ?array
+     */
+    public function getFetchModeParams()
+    {
+        return $this->fetchModeParams;
+    }
+
+    /**
+     * @param int $fetchMode
+     * @return $this
+     */
+    public function setFetchMode($fetchMode, ...$params)
+    {
+        $this->fetchMode = $fetchMode;
+        $this->fetchModeParams = $params;
+        return $this;
     }
 
     /**
@@ -80,8 +133,12 @@ class XQuery extends Query
     {
         if(!is_null($this->components)) {
             $this->components->removeAll($this->components);
-            $this->method = MethodType::Select;
         }
+
+        $this->fetchMode = null;
+        $this->fetchModeParams = null;
+        $this->method = MethodType::Select;
+
         return $this;
     }
 
@@ -93,7 +150,7 @@ class XQuery extends Query
     /**
      * @return PDOStatement Statement
      */
-    public function prepare($query = null, array $params = [], array $types = [])
+    public function prepare($query = null, array $params = [], array $types = []): PDOStatement
     {
         if(func_num_args() === 0) {
             $query = $this->compiler->compileQuery($this);
@@ -113,21 +170,25 @@ class XQuery extends Query
             );
         }
 
-        $pdo = $this->connection->getPDO();
-        if($this->resetOnExecute) {
-            $this->reset();
-        }
+        try {
+            $pdo = $this->connection->getPDO();
 
-        $statement = $pdo->prepare($sql);
-        foreach($params as $index => $value) {
-            $type = $this->determineType($index, $value, $types);
-            $statement->bindValue($index, $value, $type);
-        }
+            $statement = $pdo->prepare($sql);
+            foreach($params as $index => $value) {
+                $type = $this->determineType($index, $value, $types);
+                $statement->bindValue($index, $value, $type);
+            }
 
-        return $statement;
+            return $statement;
+        }
+        finally {
+            if($this->resetOnExecute) {
+                $this->reset();
+            }
+        }
     }
 
-    private function determineType($index, $value, array $types)
+    private function determineType($index, $value, array $types): int
     {
         if(array_key_exists($index, $types)) {
             return $types[$index];
@@ -150,7 +211,7 @@ class XQuery extends Query
     /**
      * @return PDOStatement Statement
      */
-    public function execute($query = null, array $params = [], array $types = [])
+    public function execute($query = null, array $params = [], array $types = []): PDOStatement
     {
         if(func_num_args() === 0) {
             $query = $this->compiler->compileQuery($query ?? $this);
@@ -177,24 +238,23 @@ class XQuery extends Query
 
             return $statement;
         }
-        catch(PDOException $ex) {
+        finally {
             if(isset($statement)) {
                 $this->triggerOnExecute($sql, $statement->errorInfo(), $statement);
             }
             else {
                 $this->triggerOnExecute($sql);
             }
-            throw $ex;
         }
     }
 
-    public function insert(iterable $columns, ?iterable $values = null)
+    public function insert(iterable $columns, ?iterable $values = null): PDOStatement
     {
         $query = call_user_func_array('parent::asInsert', func_get_args());
         return $this->execute($query);
     }
 
-    public function insertQuery(Query $query, ?iterable $columns = null)
+    public function insertQuery(Query $query, ?iterable $columns = null): PDOStatement
     {
         $query = call_user_func_array('parent::asInsertQuery', func_get_args());
         return $this->execute($query);
@@ -203,98 +263,73 @@ class XQuery extends Query
     /**
      * @param iterable|object $value
      */
-    public function update($value)
+    public function update($value): PDOStatement
     {
         $query = call_user_func_array('parent::asUpdate', func_get_args());
         return $this->execute($query);
     }
 
-    public function delete()
+    public function delete(): PDOStatement
     {
         $query = call_user_func_array('parent::asDelete', func_get_args());
         return $this->execute($query);
     }
 
-    public function getOne($fetchMode = PDO::FETCH_OBJ)
+    public function getOne()
     {
-        $limitComponent = $this->getOneComponent(ComponentType::Limit);
-        if (empty($limitComponent)) {
-            $this->limit(1);
-        }
-
-        $lastMethod = $this->method;
         $this->method = MethodType::Select;
 
-        $statement = $this->execute($this);
-        if(is_string($fetchMode)) {
-            $statement->setFetchMode(PDO::FETCH_CLASS, $fetchMode);
+        $statement = $this->limit(1)->execute($this);
+        if(!is_null($this->fetchMode) && $this->fetchMode !== PDO::FETCH_FUNC) {
+            $statement->setFetchMode($this->fetchMode, ...$this->fetchModeParams);
         }
-        else {
-            $statement->setFetchMode($fetchMode);
-        }
+
         $result = $statement->fetch();
         $statement->closeCursor();
 
-        $this->method = $lastMethod;
-
-        if(!$this->resetOnExecute) {
-            if(empty($limitComponent)) {
-                $this->clearComponents(ComponentType::Limit);
-            } else {
-                $this->addOrReplaceComponent(ComponentType::Limit, $limitComponent);
-            }
-        }
+        if($this->fetchMode === PDO::FETCH_FUNC
+            && isset($this->fetchModeParams[0]) > 0
+            && is_callable($this->fetchModeParams[0]))
+            $result = ($this->fetchModeParams[0])($result);
 
         return $result;
     }
 
-    public function getAll($fetchMode = PDO::FETCH_OBJ)
+    public function getAll()
     {
-        $lastMethod = $this->method;
         $this->method = MethodType::Select;
 
         $statement = $this->execute($this);
-        if(is_string($fetchMode)) {
-            $statement->setFetchMode(PDO::FETCH_CLASS, $fetchMode);
+        if(!is_null($this->fetchMode)) {
+            $statement->setFetchMode($this->fetchMode, ...$this->fetchModeParams);
         }
-        else {
-            $statement->setFetchMode($fetchMode);
-        }
+
         $result = $statement->fetchAll();
         $statement->closeCursor();
-
-        $this->method = $lastMethod;
 
         return $result;
     }
 
     public function getScalar(int $columnIndex = 0)
     {
-        $limitComponent = $this->getOneComponent(ComponentType::Limit);
-        if (empty($limitComponent)) {
-            $this->limit(1);
-        }
-
-        $lastMethod = $this->method;
         $this->method = MethodType::Select;
-        
+
         $statement = $this->execute($this);
         $result = $statement->fetchColumn($columnIndex);
         $statement->closeCursor();
 
-        $this->method = $lastMethod;
-        
-        if(!$this->resetOnExecute) {
-            if(empty($limitComponent)) {
-                $this->clearComponents(ComponentType::Limit);
-            } else {
-                $this->addOrReplaceComponent(ComponentType::Limit, $limitComponent);
-            }
-        }
-
         return $result;
     }
 
+    /**
+     * @param string $name
+     * [optional] Name of the sequence object from which the ID should be returned.
+     * 
+     * @return string|false
+     * If a sequence name was not specified for the name parameter, PDO::lastInsertId
+     * returns a string representing the row ID of the last row that was inserted
+     * into the database.
+     */
     public function lastInsertId(?string $name)
     {
         return $this->connection->getPDO()->lastInsertId($name);

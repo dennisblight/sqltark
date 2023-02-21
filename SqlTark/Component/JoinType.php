@@ -41,6 +41,8 @@ final class JoinType
             case self::FullOuterJoin:
                 return 'FullOuterJoin';
         }
+
+        return null;
     }
 
     public static function syntaxOf(int $type): ?string
@@ -67,6 +69,8 @@ final class JoinType
             case self::FullOuterJoin:
                 return 'FULL OUTER JOIN';
         }
+
+        return null;
     }
 
     private function __construct()

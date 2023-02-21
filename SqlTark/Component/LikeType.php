@@ -23,6 +23,8 @@ final class LikeType
             case self::Contains:
                 return 'Contains';
         }
+
+        return null;
     }
 
     private function __construct()

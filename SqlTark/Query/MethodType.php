@@ -32,6 +32,8 @@ final class MethodType
             case self::Auto:
                 return 'Auto';
         }
+
+        return null;
     }
 
     private function __construct()

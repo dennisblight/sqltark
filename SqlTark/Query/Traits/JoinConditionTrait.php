@@ -8,6 +8,7 @@ use SqlTark\Helper;
 use InvalidArgumentException;
 use SqlTark\Component\CompareClause;
 use SqlTark\Component\ComponentType;
+use SqlTark\Query\BaseQuery;
 
 trait JoinConditionTrait
 {

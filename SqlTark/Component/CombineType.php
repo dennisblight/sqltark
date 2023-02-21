@@ -20,6 +20,8 @@ final class CombineType
             case self::Intersect:
                 return 'Intersect';
         }
+
+        return null;
     }
 
     public static function syntaxOf(int $type): ?string
@@ -32,6 +34,8 @@ final class CombineType
             case self::Intersect:
                 return 'INTERSECT';
         }
+
+        return null;
     }
 
     private function __construct()

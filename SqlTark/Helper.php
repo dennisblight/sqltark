@@ -32,10 +32,10 @@ final class Helper
         return $result;
     }
 
-    public static function replaceAll(?string $subject, string $match, callable $callback): ?string
+    public static function replaceAll(?string $subject, string $match, callable $callback): string
     {
         if (empty($subject) || strpos($subject, $match) === false) {
-            return $subject;
+            return (string) $subject;
         }
 
         $splitted = explode($match, $subject);
