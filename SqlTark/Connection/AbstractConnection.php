@@ -4,13 +4,12 @@ declare(strict_types=1);
 
 namespace SqlTark\Connection;
 
-use ArrayAccess;
 use InvalidArgumentException;
 use PDO;
 
 abstract class AbstractConnection
 {
-    /** @var PDO $pdo */
+    /** @var ?PDO $pdo */
     protected $pdo = null;
 
     protected const Driver = '';
@@ -28,7 +27,10 @@ abstract class AbstractConnection
 
     protected $transactionCount = 0;
 
-    public function getConfig()
+    /**
+     * @return array<string, string|int>
+     */
+    public function getConfig(): array
     {
         return [
             'driver' => static::Driver,
@@ -43,13 +45,13 @@ abstract class AbstractConnection
         ];
     }
 
-    public function getPDO()
+    public function getPDO(): PDO
     {
         return $this->pdo ?? $this->connect();
     }
 
     /**
-     * @param ArrayAccess $config
+     * @param array<string, mixed> $config
      */
     public function __construct($config = [])
     {
@@ -64,9 +66,9 @@ abstract class AbstractConnection
     }
 
     /**
-     * @param ArrayAccess $config
+     * @param array<string, mixed> $config
      */
-    protected function hydrate($config)
+    protected function hydrate($config): void
     {
         if (!empty($config['host'])) {
             $this->host = $config['host'];
@@ -104,15 +106,15 @@ abstract class AbstractConnection
         $this->pdo = null;
     }
 
-    public function connect()
+    public function connect(): PDO
     {
         $dsn = $this->createDSN();
 
         $this->pdo = new PDO($dsn, $this->username, $this->password);
-        $this->pdo->setAttribute(PDO::ATTR_DEFAULT_FETCH_MODE, $this->fetchMode);
-        $this->pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+        $this->getPDO()->setAttribute(PDO::ATTR_DEFAULT_FETCH_MODE, $this->fetchMode);
+        $this->getPDO()->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
         foreach ($this->attributes as $key => $value) {
-            $this->pdo->setAttribute($key, $value);
+            $this->getPDO()->setAttribute($key, $value);
         }
         $this->onConnected();
 
@@ -121,23 +123,23 @@ abstract class AbstractConnection
 
     public function transaction(): bool
     {
-        return $this->pdo->beginTransaction();
+        return $this->getPDO()->beginTransaction();
     }
 
     public function commit(): bool
     {
-        return $this->pdo->commit();
+        return $this->getPDO()->commit();
     }
 
     public function rollback(): bool
     {
-        return $this->pdo->rollBack();
+        return $this->getPDO()->rollBack();
     }
 
-    public function resetTransactionState()
+    public function resetTransactionState(): void
     {
         $this->transactionCount = 0;
     }
 
-    protected function onConnected() { }
+    protected function onConnected(): void { }
 }

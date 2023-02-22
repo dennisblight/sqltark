@@ -6,6 +6,7 @@ namespace SqlTark\Component;
 
 use SplFixedArray;
 use SqlTark\Expressions\BaseExpression;
+use SqlTark\Helper;
 
 class RawColumn extends AbstractColumn
 {
@@ -45,16 +46,8 @@ class RawColumn extends AbstractColumn
         $this->bindings = $value;
     }
 
-    /**
-     * @return static Clone of current object
-     */
-    public function clone()
+    public function __clone()
     {
-        $self = parent::clone();
-
-        $self->expression = $this->expression;
-        $self->bindings = $this->bindings;
-
-        return $self;
+        $this->bindings = Helper::cloneObject($this->bindings);
     }
 }

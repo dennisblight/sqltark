@@ -41,7 +41,7 @@ class SQLServerCompiler extends BaseCompiler
 
         if($offsetClause && $offsetClause->hasOffset()) {
             $offset = $offsetClause->getOffset();
-            $resolvedPaging = ($resolvedPaging ?? '') . (" OFFSET {$offset} ROWS");
+            $resolvedPaging = " OFFSET {$offset} ROWS";
         }
 
         if($limitClause && $limitClause->hasLimit()) {

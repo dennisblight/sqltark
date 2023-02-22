@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace SqlTark\Component;
 
 use SqlTark\Expressions\BaseExpression;
+use SqlTark\Helper;
 use SqlTark\Query\Query;
 
 class BetweenCondition extends AbstractCondition
@@ -72,25 +73,10 @@ class BetweenCondition extends AbstractCondition
         $this->higher = $value;
     }
 
-    /**
-     * @return static Clone of current object
-     */
-    public function clone()
+    public function __clone()
     {
-        $self = parent::clone();
-
-        $self->lower = $this->lower instanceof Query
-            ? clone $this->lower
-            : $this->lower;
-            
-        $self->column = $this->column instanceof Query
-            ? clone $this->column
-            : $this->column;
-
-        $self->higher = $this->higher instanceof Query
-            ? clone $this->higher
-            : $this->higher;
-
-        return $self;
+        $this->lower = Helper::cloneObject($this->lower);
+        $this->column = Helper::cloneObject($this->column);
+        $this->higher = Helper::cloneObject($this->higher);
     }
 }

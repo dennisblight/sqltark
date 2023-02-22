@@ -6,6 +6,7 @@ namespace SqlTark\Component;
 
 use SqlTark\Query\Query;
 use SqlTark\Expressions\BaseExpression;
+use SqlTark\Helper;
 
 class LikeCondition extends AbstractCondition
 {
@@ -96,24 +97,8 @@ class LikeCondition extends AbstractCondition
         $this->value = $value;
     }
 
-    /**
-     * @return static Clone of current object
-     */
-    public function clone()
+    public function __clone()
     {
-        $self = parent::clone();
-
-        $self->column = $this->column instanceof Query
-            ? clone $this->column
-            : $this->column;
-
-        $self->type = $this->type;
-        
-        $self->value = $this->value;
-
-        $self->caseSensitive = $this->caseSensitive;
-        $self->escapeCharacter = $this->escapeCharacter;
-
-        return $self;
+        $this->column = Helper::cloneObject($this->column);
     }
 }

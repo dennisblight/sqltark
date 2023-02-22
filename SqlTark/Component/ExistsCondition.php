@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace SqlTark\Component;
 
+use SqlTark\Helper;
 use SqlTark\Query\Query;
 
 class ExistsCondition extends AbstractCondition
@@ -23,15 +24,8 @@ class ExistsCondition extends AbstractCondition
         $this->query = $value;
     }
 
-    /**
-     * @return static Clone of current object
-     */
-    public function clone()
+    public function __clone()
     {
-        $self = parent::clone();
-
-        $self->query = clone $this->query;
-
-        return $self;
+        $this->query = Helper::cloneObject($this->query);
     }
 }

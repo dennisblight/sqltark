@@ -4,6 +4,7 @@ declare(strict_types=1);
 namespace SqlTark\Component;
 
 use SqlTark\Expressions\BaseExpression;
+use SqlTark\Helper;
 use SqlTark\Query\Query;
 
 class OrderClause extends AbstractOrder
@@ -47,20 +48,8 @@ class OrderClause extends AbstractOrder
         $this->ascending = $value;
     }
 
-    /**
-     * @return static Clone of current object
-     */
-    public function clone()
+    public function __clone()
     {
-        /** @var OrderClause */
-        $self = parent::clone();
-
-        $self->column = $this->column instanceof Query
-            ? clone $this->column
-            : $this->column;
-            
-        $self->ascending = $this->ascending;
-
-        return $self;
+        $this->column = Helper::cloneObject($this->column);
     }
 }

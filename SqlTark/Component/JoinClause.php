@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace SqlTark\Component;
 
+use SqlTark\Helper;
 use SqlTark\Query\Join;
 
 class JoinClause extends AbstractJoin
@@ -29,15 +30,8 @@ class JoinClause extends AbstractJoin
         $this->join = $value;
     }
 
-    /**
-     * @return static Clone of current object
-     */
-    public function clone()
+    public function __clone()
     {
-        $self = parent::clone();
-
-        $self->join = clone $this->join;
-
-        return $self;
+        $this->join = Helper::cloneObject($this->join);
     }
 }

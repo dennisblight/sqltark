@@ -33,21 +33,4 @@ abstract class AbstractComponent
         $this->componentType = $value;
         return $this;
     }
-
-    public function __clone()
-    {
-        return $this->clone();
-    }
-
-    /**
-     * @return static Clone of current object
-     */
-    public function clone()
-    {
-        $self = new static();
-
-        $self->componentType = $this->componentType;
-
-        return $self;
-    }
 }

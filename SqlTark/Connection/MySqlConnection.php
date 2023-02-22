@@ -20,7 +20,7 @@ class MySqlConnection extends AbstractConnection
     protected $database   = '';
     protected $attributes = [];
 
-    public function getPDO()
+    public function getPDO(): PDO
     {
         return $this->pdo ?? $this->connect();
     }
@@ -33,7 +33,7 @@ class MySqlConnection extends AbstractConnection
         return $dsn;
     }
 
-    protected function onConnected()
+    protected function onConnected(): void
     {
         $this->pdo->exec("SET NAMES '{$this->charset}' COLLATE '{$this->collation}'");
         $this->pdo->exec("SET CHARACTER SET '{$this->charset}'");

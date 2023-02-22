@@ -7,6 +7,7 @@ namespace SqlTark\Query;
 use SplObjectStorage;
 use InvalidArgumentException;
 use SqlTark\Component\AbstractComponent;
+use SqlTark\Helper;
 use SqlTark\Query\Interfaces\QueryInterface;
 
 /**
@@ -189,29 +190,15 @@ abstract class BaseQuery implements QueryInterface
         return $component->getComponentType() == $componentType;
     }
 
-    /**
-     * @return static Clone of current object
-     */
     public function __clone()
     {
-        return $this->clone();
-    }
-
-    /**
-     * @return static Clone of current object
-     */
-    public function clone()
-    {
-        $self = new static;
-
         if (!is_null($this->components)) {
-            $self->components = new SplObjectStorage;
-            foreach ($this->components as $item) {
-                $self->components->attach(clone $item);
+            $sourceComponents = $this->components;
+            $this->components = new SplObjectStorage;
+            foreach ($sourceComponents as $item) {
+                $this->components->attach(Helper::cloneObject($item));
             }
         }
-
-        return $self;
     }
 
     /**

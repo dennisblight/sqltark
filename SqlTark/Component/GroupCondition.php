@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace SqlTark\Component;
 
+use SqlTark\Helper;
 use SqlTark\Query\Condition;
 
 class GroupCondition extends AbstractCondition
@@ -23,16 +24,8 @@ class GroupCondition extends AbstractCondition
         $this->condition = $value;
     }
 
-    /**
-     * @return static Clone of current object
-     */
-    public function clone()
+    public function __clone()
     {
-        /** @var GroupCondition */
-        $self = parent::clone();
-
-        $self->condition = clone $this->condition;
-
-        return $self;
+        $this->condition = Helper::cloneObject($this->condition);
     }
 }

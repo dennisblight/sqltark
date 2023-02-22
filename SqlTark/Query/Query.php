@@ -49,22 +49,6 @@ class Query extends BaseQuery implements ConditionInterface, HavingInterface
     }
 
     /**
-     * @return static Clone of current object
-     */
-    public function clone()
-    {
-        $self = parent::clone();
-
-        $self->alias = $this->alias;
-        $self->distinct = $this->distinct;
-        $self->orFlag = $this->orFlag;
-        $self->notFlag = $this->notFlag;
-        $self->havingFlag = $this->havingFlag;
-
-        return $self;
-    }
-
-    /**
      * @return $this Self object
      */
     public function asDelete()

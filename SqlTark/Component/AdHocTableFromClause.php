@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace SqlTark\Component;
 
 use SplFixedArray;
+use SqlTark\Expressions\BaseExpression;
+use SqlTark\Helper;
 use SqlTark\Query\Query;
 
 class AdHocTableFromClause extends AbstractFrom
@@ -44,23 +46,16 @@ class AdHocTableFromClause extends AbstractFrom
     }
 
     /**
-     * @param SplFixedArray<SplFixedArray<BaseExpression|Query>> $values
+     * @param SplFixedArray<SplFixedArray<BaseExpression|Query>> $value
      */
     public function setValues(iterable $value)
     {
         $this->values = $value;
     }
 
-    /**
-     * @return static Clone of current object
-     */
-    public function clone()
+    public function __clone()
     {
-        $self = parent::clone();
-
-        $self->columns = $this->columns;
-        $self->values = $this->values;
-
-        return $self;
+        $this->columns = Helper::cloneObject($this->columns);
+        $this->values = Helper::cloneObject($this->values);
     }
 }

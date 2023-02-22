@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace SqlTark\Component;
 
 use SqlTark\Expressions\BaseExpression;
+use SqlTark\Helper;
 use SqlTark\Query\Query;
 
 class CompareClause extends AbstractCondition
@@ -66,23 +67,9 @@ class CompareClause extends AbstractCondition
         $this->right = $value;
     }
 
-    /**
-     * @return static Clone of current object
-     */
-    public function clone()
+    public function __clone()
     {
-        $self = parent::clone();
-
-        $self->left = $this->left instanceof Query
-            ? clone $this->left
-            : $this->left;
-
-        $self->operator = $this->operator;
-        
-        $self->right = $this->right instanceof Query
-            ? clone $this->right
-            : $this->right;
-
-        return $self;
+        $this->left = Helper::cloneObject($this->left);
+        $this->right = Helper::cloneObject($this->right);
     }
 }

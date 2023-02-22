@@ -35,16 +35,4 @@ abstract class AbstractCondition extends AbstractComponent
     {
         $this->isNot = $value;
     }
-
-    /**
-     * @return static Clone of current object
-     */
-    public function clone()
-    {
-        /** @var AbstractCondition */
-        $self = parent::clone();
-        $self->isOr = $this->isOr;
-        $self->isNot = $this->isNot;
-        return $self;
-    }
 }

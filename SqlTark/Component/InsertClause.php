@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace SqlTark\Component;
 
 use SplFixedArray;
+use SqlTark\Expressions\BaseExpression;
+use SqlTark\Helper;
 use SqlTark\Query\Query;
 
 class InsertClause extends AbstractFrom
@@ -38,27 +40,22 @@ class InsertClause extends AbstractFrom
     /**
      * @return SplFixedArray<SplFixedArray<BaseExpression|Query>>
      */
-    public function getValues(): iterable
+    public function getValues()
     {
         return $this->values;
     }
 
     /**
-     * @param SplFixedArray<SplFixedArray<BaseExpression|Query>> $values
+     * @param SplFixedArray<SplFixedArray<BaseExpression|Query>> $value
      */
-    public function setValues(iterable $value)
+    public function setValues($value)
     {
         $this->values = $value;
     }
 
-    public function clone()
+    public function __clone()
     {
-        /** @var InsertClause */
-        $self = parent::clone();
-
-        $self->columns = $this->columns;
-        $self->values = $this->values;
-
-        return $self;
+        $this->columns = Helper::cloneObject($this->columns);
+        $this->values = Helper::cloneObject($this->values);
     }
 }

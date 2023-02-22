@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace SqlTark\Component;
 
+use SqlTark\Expressions\BaseExpression;
+use SqlTark\Helper;
 use SqlTark\Query\Query;
 
 class UpdateClause extends AbstractFrom
@@ -29,15 +31,8 @@ class UpdateClause extends AbstractFrom
         $this->value = $value;
     }
 
-    /**
-     * @return static Clone of current object
-     */
-    public function clone()
+    public function __clone()
     {
-        $self = parent::clone();
-
-        $self->value = $this->value;
-
-        return $self;
+        $this->value = Helper::cloneObject($this->value);
     }
 }

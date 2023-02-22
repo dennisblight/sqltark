@@ -206,4 +206,9 @@ final class Helper
     {
         return is_object($value) ? get_class($value) : gettype($value);
     }
+
+    public static function cloneObject($value)
+    {
+        return is_object($value) ? clone $value : $value;
+    }
 }

@@ -31,7 +31,7 @@ class XQuery extends Query
     private $resetOnExecute = true;
 
     /**
-     * @var $onExecuteCallback
+     * @var ?callable $onExecuteCallback
      */
     private $onExecuteCallback;
 
@@ -41,7 +41,7 @@ class XQuery extends Query
     private $fetchMode;
 
     /**
-     * @var ?array $fetchModeParams
+     * @var ?array<mixed> $fetchModeParams
      */
     private $fetchModeParams;
 
@@ -366,20 +366,6 @@ class XQuery extends Query
     {
         $self = new XQuery($this->connection, $this->compiler);
         $self->onExecuteCallback = $this->onExecuteCallback;
-        return $self;
-    }
-
-    /**
-     * @return static Clone of current object
-     */
-    public function __clone()
-    {
-        /** @var static $clone */
-        $self = parent::__clone();
-        $self->onExecuteCallback = $this->onExecuteCallback;
-        $self->connection = $this->connection;
-        $self->compiler = $this->compiler;
-
         return $self;
     }
 

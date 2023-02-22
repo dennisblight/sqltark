@@ -20,7 +20,7 @@ class SQLServerConnection extends AbstractConnection
     protected $database   = '';
     protected $attributes = [];
 
-    public function getPDO()
+    public function getPDO(): PDO
     {
         return $this->pdo ?? $this->connect();
     }

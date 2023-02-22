@@ -23,16 +23,4 @@ class OffsetClause extends AbstractComponent
     {
         return $this->offset > 0;
     }
-
-    /**
-     * @return static Clone of current object
-     */
-    public function clone()
-    {
-        $self = parent::clone();
-
-        $self->offset = $this->offset;
-
-        return $self;
-    }
 }

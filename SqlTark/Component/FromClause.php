@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace SqlTark\Component;
 
+use SqlTark\Helper;
 use SqlTark\Query\Query;
 
 class FromClause extends AbstractFrom
@@ -22,7 +23,7 @@ class FromClause extends AbstractFrom
     }
 
     /**
-     * @param string|Query $table
+     * @param string|Query $value
      */
     public function setTable($value)
     {
@@ -52,15 +53,8 @@ class FromClause extends AbstractFrom
         return $this->alias;
     }
 
-    /**
-     * @return static Clone of current object
-     */
-    public function clone()
+    public function __clone()
     {
-        $self = parent::clone();
-
-        $self->table = $this->table;
-
-        return $self;
+        $this->table = Helper::cloneObject($this->table);
     }
 }

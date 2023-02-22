@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace SqlTark\Component;
 
+use SqlTark\Helper;
 use SqlTark\Query\Query;
 
 class InsertQueryClause extends AbstractInsert
@@ -38,16 +39,9 @@ class InsertQueryClause extends AbstractInsert
         $this->columns = $value;
     }
 
-    /**
-     * @return static Clone of current object
-     */
-    public function clone()
+    public function __clone()
     {
-        $self = parent::clone();
-
-        $self->query = clone $this->query;
-        $self->columns = $this->columns;
-
-        return $self;
+        $this->query = Helper::cloneObject($this->query);
+        $this->columns = Helper::cloneObject($this->columns);
     }
 }

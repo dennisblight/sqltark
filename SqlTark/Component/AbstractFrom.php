@@ -20,17 +20,4 @@ abstract class AbstractFrom extends AbstractComponent
     {
         $this->alias = $value;
     }
-
-    /**
-     * @return static Clone of current object
-     */
-    public function clone()
-    {
-        /** @var AbstractFrom */
-        $self = parent::clone();
-
-        $self->alias = $this->alias;
-
-        return $self;
-    }
 }

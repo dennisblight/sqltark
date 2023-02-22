@@ -6,6 +6,7 @@ namespace SqlTark\Component;
 
 use SplFixedArray;
 use SqlTark\Expressions\BaseExpression;
+use SqlTark\Helper;
 use SqlTark\Query\Query;
 
 class InCondition extends AbstractCondition
@@ -52,21 +53,9 @@ class InCondition extends AbstractCondition
         $this->values = $value;
     }
 
-    /**
-     * @return static Clone of current object
-     */
-    public function clone()
+    public function __clone()
     {
-        $self = parent::clone();
-
-        $self->column = $this->column instanceof Query
-            ? clone $this->column
-            : $this->column;
-            
-        $self->values = $this->values instanceof Query
-            ? clone $this->values
-            : $this->values;
-
-        return $self;
+        $this->column = Helper::cloneObject($this->column);
+        $this->values = Helper::cloneObject($this->values);
     }
 }

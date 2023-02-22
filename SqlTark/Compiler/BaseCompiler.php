@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace SqlTark\Compiler;
 
 use InvalidArgumentException;
-use SplFixedArray;
 use SqlTark\Component\AbstractColumn;
 use SqlTark\Component\AbstractCondition;
 use SqlTark\Component\AbstractFrom;
@@ -282,7 +281,7 @@ abstract class BaseCompiler
     {
         $result = trim($name);
         if (empty($result)) {
-            return null;
+            return '';
         }
 
         $aliasSplit = array_map(
@@ -552,17 +551,19 @@ abstract class BaseCompiler
                 $isAscending = $column->isAscending();
                 $resolvedColumn = $expressionResolver($columnContent);
                 $resolvedColumn .= $isAscending ? ' ASC' : ' DESC';
-            } elseif ($column instanceof RawOrder) {
+            }
+            elseif ($column instanceof RawOrder) {
 
                 $resolvedColumn = $this->compileRaw(
                     $column->getExpression(),
                     $column->getBindings()
                 );
-            } elseif ($column instanceof RandomOrder) {
+            }
+            elseif ($column instanceof RandomOrder) {
                 $resolvedColumn = 'RAND()';
             }
 
-            if ($resolvedColumn) {
+            if (!is_null($resolvedColumn)) {
                 if ($index > 0) $result .= ', ';
                 $result .= $resolvedColumn;
             }
@@ -587,7 +588,8 @@ abstract class BaseCompiler
                 $resolvedPaging = "LIMIT $offset, $limit";
             }
             else $resolvedPaging = "LIMIT $limit";
-        } elseif ($offsetClause && $offsetClause->hasOffset()) {
+        }
+        elseif ($offsetClause && $offsetClause->hasOffset()) {
             $offset = $offsetClause->getOffset();
             $resolvedPaging = "LIMIT $offset, " . static::MaxValue;
         }
@@ -977,9 +979,9 @@ abstract class BaseCompiler
 
     /**
      * @param string $expression
-     * @param SplFixedArray<BaseExpression> $bindings
+     * @param array<string, BaseExpression> $bindings
      */
-    public function compileRaw(string $expression, iterable $bindings = []): string
+    public function compileRaw(string $expression, $bindings = []): string
     {
         $expression = trim($expression, " \t\n\r\0\x0B,");
         return Helper::replaceAll($expression, static::ParameterPlaceholder, function ($index) use ($bindings) {

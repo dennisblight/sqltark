@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace SqlTark\Component;
 
+use SqlTark\Helper;
 use SqlTark\Query\Query;
 
 class CombineClause extends AbstractComponent
@@ -53,17 +54,8 @@ class CombineClause extends AbstractComponent
         $this->all = $value;
     }
 
-    /**
-     * @return static Clone of current object
-     */
-    public function clone()
+    public function __clone()
     {
-        $self = parent::clone();
-
-        $self->query = clone $this->query;
-        $self->operation = $this->operation;
-        $self->all = $this->all;
-
-        return $self;
+        $this->query = Helper::cloneObject($this->query);
     }
 }

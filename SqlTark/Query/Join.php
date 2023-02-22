@@ -46,7 +46,7 @@ class Join extends BaseQuery implements ConditionInterface
     }
 
     /**
-     * @return $this Self object
+     * @return static Self object
      */
     public function joinWith($table, ?string $alias = null)
     {
@@ -54,7 +54,7 @@ class Join extends BaseQuery implements ConditionInterface
     }
 
     /**
-     * @return $this Self object
+     * @return static Self object
      */
     public function asType(int $type)
     {
@@ -63,7 +63,7 @@ class Join extends BaseQuery implements ConditionInterface
     }
 
     /**
-     * @return $this Self object
+     * @return static Self object
      */
     public function asInnerJoin()
     {
@@ -71,7 +71,7 @@ class Join extends BaseQuery implements ConditionInterface
     }
 
     /**
-     * @return $this Self object
+     * @return static Self object
      */
     public function asLeftJoin()
     {
@@ -79,7 +79,7 @@ class Join extends BaseQuery implements ConditionInterface
     }
 
     /**
-     * @return $this Self object
+     * @return static Self object
      */
     public function asRightJoin()
     {
@@ -87,7 +87,7 @@ class Join extends BaseQuery implements ConditionInterface
     }
 
     /**
-     * @return $this Self object
+     * @return static Self object
      */
     public function asOuterJoin()
     {
@@ -95,7 +95,7 @@ class Join extends BaseQuery implements ConditionInterface
     }
 
     /**
-     * @return $this Self object
+     * @return static Self object
      */
     public function asNaturalJoin()
     {
@@ -103,7 +103,7 @@ class Join extends BaseQuery implements ConditionInterface
     }
 
     /**
-     * @return $this Self object
+     * @return static Self object
      */
     public function asLeftOuterJoin()
     {
@@ -111,7 +111,7 @@ class Join extends BaseQuery implements ConditionInterface
     }
 
     /**
-     * @return $this Self object
+     * @return static Self object
      */
     public function asRightOuterJoin()
     {
@@ -119,25 +119,10 @@ class Join extends BaseQuery implements ConditionInterface
     }
 
     /**
-     * @return $this Self object
+     * @return static Self object
      */
     public function asFullOuterJoin()
     {
         return $this->asType(JoinType::FullOuterJoin);
-    }
-
-    /**
-     * @return static Clone of current object
-     */
-    public function clone()
-    {
-        $self = parent::clone();
-
-        $self->alias = $this->alias;
-        $self->orFlag = $this->orFlag;
-        $self->notFlag = $this->notFlag;
-        $self->type = $this->type;
-
-        return $self;
     }
 }

@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace SqlTark\Component;
 
 use SqlTark\Expressions\BaseExpression;
+use SqlTark\Helper;
 use SqlTark\Query\Query;
 
 class NullCondition extends AbstractCondition
@@ -30,17 +31,8 @@ class NullCondition extends AbstractCondition
         $this->column = $value;
     }
 
-    /**
-     * @return static Clone of current object
-     */
-    public function clone()
+    public function __clone()
     {
-        $self = parent::clone();
-
-        $self->column = $this->column instanceof Query
-            ? clone $this->column
-            : $this->column;
-
-        return $self;
+        $this->column = Helper::cloneObject($this->column);
     }
 }

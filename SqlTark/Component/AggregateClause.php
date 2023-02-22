@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace SqlTark\Component;
 
 use SqlTark\Expressions\BaseExpression;
+use SqlTark\Helper;
 use SqlTark\Query\Query;
 
 class AggregateClause extends AbstractComponent
@@ -15,7 +16,7 @@ class AggregateClause extends AbstractComponent
     protected $type;
 
     /**
-     * @var 
+     * @var Query|BaseExpression
      */
     protected $column;
 
@@ -38,23 +39,15 @@ class AggregateClause extends AbstractComponent
     }
 
     /**
-     * @param Query|BaseExpression
+     * @param Query|BaseExpression $value
      */
     public function setColumn($value)
     {
         $this->column = $value;
     }
 
-    public function clone()
+    public function __clone()
     {
-        $self = parent::clone();
-
-        $self->type = $this->type;
-        
-        $self->column = $this->column instanceof Query
-            ? clone $this->column
-            : $this->column;
-
-        return $self;
+        $this->column = Helper::cloneObject($this->column);
     }
 }
